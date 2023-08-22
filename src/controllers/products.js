@@ -1,4 +1,6 @@
 import Product from "../models/products.js";
+import { ProductSchema } from "../schemas/products.js";
+
 export const getAll = async (req, res) => {
     const { _limit = 10, _sort = "createAt", _order = "asc", _page = 1, q } = req.query;
     const options = {
@@ -36,6 +38,7 @@ export const get = async (req, res) => {
         })
     }
 };
+
 export const remove = async (req, res) => {
     try {
         const id = req.params.id;
@@ -49,3 +52,51 @@ export const remove = async (req, res) => {
         })
     }
 };
+
+export const addProduct = async (req, res) => {
+    try {
+        const body = req.body;
+        const { error } = ProductSchema.validate(body);
+        if (error) {
+            return res.status(400).json({
+                message: error.details[0].message
+            })
+        }
+        const product = await Product.create(body);
+        if (product.length === 0) {
+            return res.status(400).json({
+                message: "Thêm sản phẩm thất bại"
+            })
+        }
+        return res.status(200).json({
+            message: "Thêm sản phẩm thành công!",
+            product
+        })
+    } catch (error) {
+        return res.status(400).json({
+            message: error.message
+        })
+
+    }
+}
+
+export const updateProduct = async (req, res) => {
+    try {
+        const data = await Product.findOneAndUpdate({ _id: req.params.id }, req.body, {
+            new: true
+        })
+        if (!data) {
+            return res.status(400).json({
+                message: "Cập nhật sản phẩm thất bại"
+            })
+        }
+        return res.status(200).json({
+            message: "Cập nhật sản phẩm thành công",
+            data
+        })
+    } catch (error) {
+        return res.status(400).json({
+            message: error
+        })
+    }
+}
