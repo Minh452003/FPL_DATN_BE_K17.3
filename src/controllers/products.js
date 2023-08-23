@@ -1,4 +1,5 @@
 import Product from "../models/products.js";
+import Category from "../models/category.js";
 import { ProductSchema } from "../schemas/products.js";
 
 export const getAll = async (req, res) => {
@@ -63,6 +64,11 @@ export const addProduct = async (req, res) => {
             })
         }
         const product = await Product.create(body);
+        await Category.findOneAndUpdate(product.categoryId, {
+            $addToSet: {
+                products: product
+            }
+        })
         if (product.length === 0) {
             return res.status(400).json({
                 message: "Thêm sản phẩm thất bại"

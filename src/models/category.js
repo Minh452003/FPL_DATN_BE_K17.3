@@ -11,10 +11,13 @@ const categorySchema = mongoose.Schema({
     type: Object,
     require: true
   },
-  productId: {
-    type: mongoose.Types.ObjectId,
-    ref: "Product"
-  },
+  products: [
+    {
+      type: mongoose.Types.ObjectId,
+      ref: "Product"
+    },
+  ]
+
 },
   { timestamps: true, versionKey: false });
 
