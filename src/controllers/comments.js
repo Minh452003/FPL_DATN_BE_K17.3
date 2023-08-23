@@ -1,5 +1,4 @@
-import Comment from "../model/comments.js";
-import { CommentSchema } from "../schemas/comments.js";
+import Comment from "../models/comments.js";
 
 
 export const getCommentFromProduct = async (req, res) => {
@@ -61,7 +60,6 @@ export const getOneComment = async (req, res) => {
 
 export const create = async (req, res) => {
 
-    const { productId, description, userId } = req.body;
     try {
         const comment = await Comment.create(req.body);
         return res.status(200).json({
@@ -76,6 +74,7 @@ export const create = async (req, res) => {
 }
 
 
+// Cập nhập nội dung của bình luận
 export const updateComment = async (req, res) => {
     const { id } = req.params;
     const { description } = req.body;
@@ -98,6 +97,7 @@ export const updateComment = async (req, res) => {
 }
 
 
+// Xóa một bình luận
 export const removeComment = async (req, res) => {
     const { id } = req.params;
     try {
@@ -111,7 +111,7 @@ export const removeComment = async (req, res) => {
         });
     }
 }
-
+//  Get all tất cả bình luận
 export const getAll = async (req, res) => {
     try {
         const comments = await Comment.find().populate({
