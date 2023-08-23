@@ -1,4 +1,4 @@
-import Status from "../model/status.js";
+import Status from "../models/status.js";
 
 export const getStatusList = async (req, res) => {
   try {
@@ -10,8 +10,7 @@ export const getStatusList = async (req, res) => {
 };
 export const createStatus = async (req, res) => {
   try {
-    const { name, description } = req.body;
-    const newStatus = await Status.create({ name, description });
+    const newStatus = await Status.create(req.body);
 
     res.status(201).json({
       message: 'Trạng thái đã được tạo thành công',
