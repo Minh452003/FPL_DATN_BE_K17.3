@@ -22,7 +22,7 @@ export const signupSchema = joi.object({
     confirmPassword: joi.string().valid(joi.ref("password")).required().messages({
         "any.only": "Mật khẩu không khớp",
         "string.empty": "Mật khẩu không được để trống",
-        "any.required": "Trường mật khẩu là bắt buộc",
+        "any.required": "Trường confirmPassword là bắt buộc",
     }),
     phone: joi.string().max(12).required().messages({
         "string.empty": "Mời điền số điện thoại",
