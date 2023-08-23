@@ -6,6 +6,7 @@ import routerProducts from "./routers/products.js";
 import routerBrands from "./routers/brands.js";
 import routerStatus from "./routers/status.js";
 import routerComment from "./routers/comments.js";
+import routerUser from "./routers/user.js";
 
 dotenv.config();
 const app = express();
@@ -15,6 +16,7 @@ app.use("/api", routerProducts);
 app.use("/api", routerBrands);
 app.use("/api", routerStatus);
 app.use("/api", routerComment);
+app.use("/api", routerUser)
 
 
 app.listen(8080, async () => {
