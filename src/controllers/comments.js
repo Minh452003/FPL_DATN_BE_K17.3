@@ -1,5 +1,5 @@
-import Comment from "../model/comments.js";
-import { CommentSchema } from "../schemas/comments.js";
+
+import Comment from "../models/comments.js";
 
 
 export const getCommentFromProduct = async (req, res) => {
@@ -61,7 +61,6 @@ export const getOneComment = async (req, res) => {
 
 export const create = async (req, res) => {
 
-    const { productId, description, userId } = req.body;
     try {
         const comment = await Comment.create(req.body);
         return res.status(200).json({
