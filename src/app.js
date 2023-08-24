@@ -21,10 +21,7 @@ app.use("/api", routerStatus);
 app.use("/api", routerComment);
 app.use("/api", routerUser)
 app.use("/api", uploadRouter);
-<<<<<<< HEAD
 
-=======
->>>>>>> 46e6021749313ec9bd2172cd1ee9da2a7043d521
 
 app.listen(8088, async () => {
     await mongoose.connect(process.env.URL_MONGO, { useNewUrlParser: true, useUnifiedTopology: true });
