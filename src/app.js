@@ -8,6 +8,7 @@ import routerStatus from "./routers/status.js";
 import routerComment from "./routers/comments.js";
 import routerUser from "./routers/user.js";
 import routerCategory from "./routers/category.js";
+import uploadRouter from "./routers/upload.js";
 
 dotenv.config();
 const app = express();
@@ -19,6 +20,7 @@ app.use("/api", routerBrands);
 app.use("/api", routerStatus);
 app.use("/api", routerComment);
 app.use("/api", routerUser)
+app.use("/api", uploadRouter);
 
 
 app.listen(8080, async () => {
