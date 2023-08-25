@@ -57,7 +57,7 @@ export const remove = async (req, res) => {
 export const addProduct = async (req, res) => {
     try {
         const body = req.body;
-        const { error } = ProductSchema.validate(body);
+        const { error } = ProductSchema.validate(body, { abortEarly: false });
         if (error) {
             return res.status(400).json({
                 message: error.details[0].message
@@ -66,7 +66,7 @@ export const addProduct = async (req, res) => {
         const product = await Product.create(body);
         await Category.findOneAndUpdate(product.categoryId, {
             $addToSet: {
-                products: product
+                products: product._id,
             }
         })
         if (product.length === 0) {
@@ -86,12 +86,31 @@ export const addProduct = async (req, res) => {
     }
 }
 
+
 export const updateProduct = async (req, res) => {
     try {
-        const data = await Product.findOneAndUpdate({ _id: req.params.id }, req.body, {
-            new: true
+        const id = req.params.id;
+        const body = req.body;
+        const { categoryId } = req.body
+        const product = await Product.findById(id)
+        const { error } = ProductSchema.validate(body, { abortEarly: false })
+        if (error) {
+            return res.status(400).json({
+                message: error.details[0].message
+            })
+        }
+        await Category.findByIdAndUpdate(product.categoryId, {
+            $pull: {
+                products: product._id
+            }
         })
-        if (!data) {
+        await Category.findByIdAndUpdate(categoryId, {
+            $addToSet: {
+                products: product._id
+            }
+        })
+        const data = await Product.findByIdAndUpdate({ _id: id }, body, { new: true })
+        if (data.length === 0) {
             return res.status(400).json({
                 message: "Cập nhật sản phẩm thất bại"
             })
