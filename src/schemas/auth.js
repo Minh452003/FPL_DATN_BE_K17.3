@@ -31,7 +31,7 @@ export const signupSchema = joi.object({
     }),
     address: joi.string().required().messages({
         "string.empty": "Thêm địa chỉ ",
-        "any.required": 'Trường "Tên" là bắt buộc',
+        "any.required": 'Trường "Địa chỉ" là bắt buộc',
     }),
     avatar: joi.object()
 });
