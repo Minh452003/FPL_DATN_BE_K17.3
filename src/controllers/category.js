@@ -51,7 +51,7 @@ export const RemoveCategory = async (req, res) => {
       await Category.findByIdAndDelete(id);
 
       return res.status(200).json({
-          message: "Xoá Danh mục thành công  thành công",
+          message: "Xoá Danh mục thành công!",
       })
   } catch (error) {
       return res.status(400).json({
@@ -96,9 +96,17 @@ export const addCategory = async (req, res) => {
 
 
 export const updateCategory = async (req, res) => {
-    try {
-        const data = await Category.findOneAndUpdate({ _id: req.params.id }, req.body, { new: true })
-        if (!data) {
+  try {
+    const id = req.params.id;
+    const body = req.body;
+    const { error } = categorySchema.validate(body, { abortEarly: false })
+    if (error) {
+      return res.status(400).json({
+        message: error.details[0].message
+      })
+    }
+        const data = await Category.findOneAndUpdate({ _id: id }, body, { new: true })
+        if (!data || data.length === 0) {
             return res.status(400).json({
                 message: "Cập nhật danh mục thất bại"
             })
