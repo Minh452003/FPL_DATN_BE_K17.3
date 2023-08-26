@@ -25,7 +25,7 @@ app.use("/api", uploadRouter);
 app.use("/api", cartRouter);
 
 
-app.listen(8088, async () => {
+app.listen(8080, async () => {
     await mongoose.connect(process.env.URL_MONGO, { useNewUrlParser: true, useUnifiedTopology: true });
     console.log("Server is running 8088");
 });
