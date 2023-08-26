@@ -4,15 +4,15 @@ import mongoosePaginate from "mongoose-paginate-v2";
 const productsSchema = mongoose.Schema({
     product_name: {
         type: String,
-        require: true,
+        required: true,
     },
     product_price: {
         type: Number,
-        require: true
+        required: true
     },
     image: {
         type: Object,
-        require: true
+        required: true
     },
     view: {
         type: Number,
@@ -20,11 +20,11 @@ const productsSchema = mongoose.Schema({
     },
     stock_quantity: {
         type: Number,
-        require: true
+        required: true
     },
     description: {
         type: String,
-        require: true
+        required: true
     },
     categoryId: {
         type: mongoose.Types.ObjectId,
