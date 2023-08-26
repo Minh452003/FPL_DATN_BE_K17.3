@@ -13,10 +13,7 @@ export const orderSchema = Joi.object({
     }),
     products: Joi.array().required(),
     total: Joi.number().required().min(0),
-    status: Joi.string().required().message({
-        "string.empty": "mời nhập trạng thái",
-        "any.required": "Phải nhập trạng thái",
-    }),
+    status: Joi.string(),
     phone: Joi.string().max(12).required().messages({
         "string.empty": "Mời điền số điện thoại",
         "any.required": "bắt buộc thêm số điện thoại",

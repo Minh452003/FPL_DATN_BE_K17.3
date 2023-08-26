@@ -9,7 +9,7 @@ const categorySchema = mongoose.Schema({
   },
   category_image: {
     type: Object,
-    require: true
+    required: true
   },
   products: [
     {

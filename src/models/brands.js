@@ -3,8 +3,8 @@ import mongoose from 'mongoose';
 const brandSchema = new mongoose.Schema(
   {
     brand_name: {
-        type: String,
-        require: true
+      type: String,
+      required: true
     },
   },
   { timestamps: true, versionKey: false }
