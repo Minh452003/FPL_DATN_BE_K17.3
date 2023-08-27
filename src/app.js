@@ -9,7 +9,11 @@ import routerComment from "./routers/comments.js";
 import routerUser from "./routers/user.js";
 import routerCategory from "./routers/category.js";
 import uploadRouter from "./routers/upload.js";
+
+import routerOrder from "./routers/order.js";
+
 import cartRouter from "./routers/cart.js";
+
 
 dotenv.config();
 const app = express();
@@ -21,11 +25,17 @@ app.use("/api", routerBrands);
 app.use("/api", routerStatus);
 app.use("/api", routerComment);
 app.use("/api", routerUser)
+app.use("/api", routerOrder)
 app.use("/api", uploadRouter);
 app.use("/api", cartRouter);
 
 
-app.listen(8080, async () => {
+
+
+app.listen(8088, async () => {
+
+
+
     await mongoose.connect(process.env.URL_MONGO, { useNewUrlParser: true, useUnifiedTopology: true });
     console.log("Server is running 8088");
 });
