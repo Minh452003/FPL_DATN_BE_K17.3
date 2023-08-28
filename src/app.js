@@ -9,10 +9,9 @@ import routerComment from "./routers/comments.js";
 import routerUser from "./routers/user.js";
 import routerCategory from "./routers/category.js";
 import uploadRouter from "./routers/upload.js";
-
 import routerOrder from "./routers/order.js";
-
 import cartRouter from "./routers/cart.js";
+import routerCoupons from "./routers/coupons.js";
 
 
 dotenv.config();
@@ -24,8 +23,9 @@ app.use("/api", routerCategory);
 app.use("/api", routerBrands);
 app.use("/api", routerStatus);
 app.use("/api", routerComment);
-app.use("/api", routerUser)
-app.use("/api", routerOrder)
+app.use("/api", routerUser);
+app.use("/api", routerOrder);
+app.use("/api", routerCoupons)
 app.use("/api", uploadRouter);
 app.use("/api", cartRouter);
 
