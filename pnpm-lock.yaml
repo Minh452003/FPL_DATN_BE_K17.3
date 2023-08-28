@@ -50,6 +50,9 @@ dependencies:
   multer-storage-cloudinary:
     specifier: ^4.0.0
     version: 4.0.0(cloudinary@1.37.3)
+  nodemailer:
+    specifier: ^6.9.4
+    version: 6.9.4
 
 devDependencies:
   '@types/multer':
@@ -1420,6 +1423,11 @@ packages:
         optional: true
     dependencies:
       whatwg-url: 5.0.0
+    dev: false
+
+  /nodemailer@6.9.4:
+    resolution: {integrity: sha512-CXjQvrQZV4+6X5wP6ZIgdehJamI63MFoYFGGPtHudWym9qaEHDNdPzaj5bfMCvxG1vhAileSWW90q7nL0N36mA==}
+    engines: {node: '>=6.0.0'}
     dev: false
 
   /nodemon@2.0.22:

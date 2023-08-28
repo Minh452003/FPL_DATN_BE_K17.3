@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import User from "../models/user.js";
 import { signinSchema, signupSchema } from "../schemas/auth.js";
 import jwt from "jsonwebtoken";
+import nodemailer from "nodemailer"
 
 export const getAll = async (req, res) => {
     try {
@@ -50,6 +51,8 @@ export const remove = async (req, res) => {
 
 export const signup = async (req, res) => {
     try {
+        
+        
         const { first_name, last_name,email,phone,address,avatar, password } = req.body;
         const { error } = signupSchema.validate(req.body, { abortEarly: false });
         if (error) {
@@ -80,6 +83,27 @@ export const signup = async (req, res) => {
         // Không trả password
         user.password = undefined;
 
+        const mailTransporter = nodemailer.createTransport({
+            service:"gmail",
+            auth:{
+                user:process.env.MAIL_USERNAME,
+                pass:process.env.MAIL_PASSWORD
+            }
+        })
+        // gửi mail đăng ký thành công
+        const details= {
+            from :process.env.MAIL_USERNAME,
+            to : email,
+            subject :"Thông báo đăng ký thành công tài khoản",
+            text :"Thông báo đăng ký thành công tài khoản"
+        }
+        mailTransporter.sendMail(details,(err)=>{
+            if(err){
+                console.log("err",err)
+            } else{
+                console.log("success")
+            }
+        })
         return res.status(201).json({
             message: "Đăng ký thành công",
             user,
