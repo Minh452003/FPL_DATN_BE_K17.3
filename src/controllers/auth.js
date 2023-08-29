@@ -8,52 +8,57 @@ import nodemailer from "nodemailer"
 export const getAll = async (req, res) => {
     try {
         const data = await user.find();
-        return res.status(200).json(data);
+        return res.status(200).json({
+            message: "Lấy tất cả người dùng thành công",
+            data
+        });
     } catch (error) {
         return res.status(400).json({
-            message: error,
+            message: error.message,
         })
     }
 };
+
 export const getOneById = async (req, res) => {
     try {
         const id = req.params.id;
         const data = await user.findById(id);
-        if (data === 0) {
-            return res.status(400).json({
-                message: "Hiện thông tin người dùng thất bại",
+        if (data.length === 0) {
+            return res.status(404).json({
+                message: "Lấy thông tin 1 người dùng thất bại",
             })
         }
-        const { _id, first_name,last_name,password, email, address, phone, role, avatar, createdAt } = data;
+        const { _id, first_name, last_name, password, email, address, phone, role, avatar, createdAt } = data;
 
         return res.status(200).json({
-            _id, first_name,last_name,password, email, address, phone, role, avatar, createdAt        
+            message: "Lấy thông tin 1 người dùng thành công",
+            _id, first_name, last_name, password, email, address, phone, role, avatar, createdAt
         });
     } catch (error) {
         return res.status(400).json({
-            message: error,
+            message: error.message,
         })
     }
 };
+
 export const remove = async (req, res) => {
     try {
         const id = req.params.id;
         const data = await user.findByIdAndDelete(id);
         return res.status(200).json({
             message: "Xóa thông tin người dùng thành công",
+            data
         })
     } catch (error) {
         return res.status(400).json({
-            message: error,
+            message: error.message,
         })
     }
 };
 
 export const signup = async (req, res) => {
     try {
-        
-        
-        const { first_name, last_name,email,phone,address,avatar, password } = req.body;
+        const { first_name, last_name, email, phone, address, avatar, password } = req.body;
         const { error } = signupSchema.validate(req.body, { abortEarly: false });
         if (error) {
             const errors = error.details.map((err) => err.message);
@@ -84,23 +89,23 @@ export const signup = async (req, res) => {
         user.password = undefined;
 
         const mailTransporter = nodemailer.createTransport({
-            service:"gmail",
-            auth:{
-                user:process.env.MAIL_USERNAME,
-                pass:process.env.MAIL_PASSWORD
+            service: "gmail",
+            auth: {
+                user: process.env.MAIL_USERNAME,
+                pass: process.env.MAIL_PASSWORD
             }
         })
         // gửi mail đăng ký thành công
-        const details= {
-            from :process.env.MAIL_USERNAME,
-            to : email,
-            subject :"Thông báo đăng ký thành công tài khoản",
-            text :"Thông báo đăng ký thành công tài khoản"
+        const details = {
+            from: process.env.MAIL_USERNAME,
+            to: email,
+            subject: "Thông báo đăng ký thành công tài khoản",
+            text: "Thông báo đăng ký thành công tài khoản"
         }
-        mailTransporter.sendMail(details,(err)=>{
-            if(err){
-                console.log("err",err)
-            } else{
+        mailTransporter.sendMail(details, (err) => {
+            if (err) {
+                console.log("err", err)
+            } else {
                 console.log("success")
             }
         })
