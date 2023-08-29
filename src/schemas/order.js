@@ -6,11 +6,7 @@ export const orderSchema = Joi.object({
         "any.required": "Trường ID người dùng bắt buộc nhập",
         "string.base": "ID người dùng phải là string"
     }),
-    couponld: Joi.string().required().messages({
-        "string.empty": "ID sản phẩm bắt buộc nhập",
-        "any.required": "Trường ID sản phẩm bắt buộc nhập",
-        "string.base": "ID sản phẩm phải là string"
-    }),
+    couponld: Joi.string(),
     products: Joi.array().required(),
     total: Joi.number().required().min(0),
     status: Joi.string(),

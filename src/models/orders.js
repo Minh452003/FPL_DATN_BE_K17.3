@@ -8,8 +8,7 @@ const orderSchema = mongoose.Schema({
   },
   couponld: {
     type: mongoose.Types.ObjectId,
-    ref: "Couponld",
-    required: true
+    ref: "Couponld"
   }
   ,
   products: [
