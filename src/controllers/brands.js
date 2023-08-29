@@ -20,7 +20,7 @@ export const getAllBrands = async (req, res) => {
 };
 export const getBrand = async function (req, res) {
   try {
-
+    
     const brand = await Brand.findById(req.params.id);
     if (!brand) {
       return res.json({
@@ -37,8 +37,16 @@ export const getBrand = async function (req, res) {
   }
 };
 export const createBrand = async function (req, res) {
+  const { brand_name } = req.body;
+  const body = req.body;
   try {
-    const { error } = BrandSchema.validate(body, { abortEarly: false });
+    const data = await Brand.findOne({ brand_name });
+    if (data) {
+      return res.status(400).json({
+        message: "Brand đã tồn tại",
+      });
+    }
+    const { error } = await BrandSchema.validate(body, { abortEarly: false });
     if (error) {
       const errors = error.details.map((err) => err.message);
       return res.status(400).json({
@@ -50,7 +58,9 @@ export const createBrand = async function (req, res) {
       return res.json({
         message: 'Không thêm thương hiệu',
       });
+      
     }
+    console.log(brand);
     return res.json({
       message: 'Thêm thương hiệu thành công',
       brand,
