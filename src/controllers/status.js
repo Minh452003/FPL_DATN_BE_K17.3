@@ -1,27 +1,43 @@
 
 import Status from "../models/status.js";
+import { statusSchema } from "../schemas/status.js";
 
 export const getStatusList = async (req, res) => {
   try {
-    const statusList = await Status.find();
-    res.status(200).json(statusList);
+    const status = await Status.find();
+    if (status.length === 0) {
+      return res.json({
+        message: 'Không có trạng thái nào',
+      });
+    }
+    return res.json(status);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    return res.status(400).json({
+      message: error.message,
+    });
   }
 };
 export const createStatus = async (req, res) => {
   try {
-
-    const newStatus = await Status.create(req.body);
-
-    res.status(201).json({
-      message: 'Trạng thái đã được tạo thành công',
-      data: newStatus,
+    const { error } = statusSchema.validate(req.body);
+    if (error) {
+      return res.status(400).json({
+        message: error.details.map((err) => err.message),
+      });
+    }
+    const status = await Status.create(req.body);
+    if (!status) {
+      return res.json({
+        message: 'Không thể thêm trạng thái',
+      });
+    }
+    return res.json({
+      message: 'Thêm trạng thái thành công',
+      status,
     });
   } catch (error) {
-    res.status(400).json({
-      message: 'Không thể tạo trạng thái',
-      error: error.message,
+    return res.status(400).json({
+      message: error,
     });
   }
 };

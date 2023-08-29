@@ -56,7 +56,7 @@ export const createBrand = async function (req, res) {
     const brand = await Brand.create(req.body);
     if (!brand) {
       return res.json({
-        message: 'Không thêm thương hiệu',
+        message: 'Không thể thêm thương hiệu',
       });
       
     }
