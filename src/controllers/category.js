@@ -4,26 +4,26 @@ import Category from "../models/category.js";
 export const getAllCategory = async (req, res) => {
   const { _limit = 10, _sort = "createAt", _order = "asc", _page = 1, q } = req.query;
   const options = {
-      page: _page,
-      limit: _limit,
-      sort: {
-          [_sort]: _order == "desc" ? -1 : 1,
-      },
+    page: _page,
+    limit: _limit,
+    sort: {
+      [_sort]: _order == "desc" ? -1 : 1,
+    },
   };
 
   const searchQuery = q ? { name: { $regex: q, $options: "i" } } : {};
   try {
-      const data = await Category.paginate(searchQuery, options);
-      if (data === 0) {
-        return res.status(400).json({
-            message: "Không có danh mục!",
-        })
-      }
-      return res.status(200).json(data);
-  } catch (error) {
+    const data = await Category.paginate(searchQuery, options);
+    if (data === 0) {
       return res.status(400).json({
-          message: error,
+        message: "Không có danh mục!",
       })
+    }
+    return res.status(200).json(data);
+  } catch (error) {
+    return res.status(400).json({
+      message: error,
+    })
   }
 };
 
@@ -45,18 +45,18 @@ export const getCategoryById = async (req, res) => {
 
 export const RemoveCategory = async (req, res) => {
   try {
-      const id = req.params.id;
-    
-       // Xóa danh mục
-      await Category.findByIdAndDelete(id);
+    const id = req.params.id;
 
-      return res.status(200).json({
-          message: "Xoá Danh mục thành công!",
-      })
+    // Xóa danh mục
+    await Category.findByIdAndDelete(id);
+
+    return res.status(200).json({
+      message: "Xoá Danh mục thành công!",
+    })
   } catch (error) {
-      return res.status(400).json({
-          message: error,
-      })
+    return res.status(400).json({
+      message: error,
+    })
   }
 };
 
@@ -71,11 +71,12 @@ export const addCategory = async (req, res) => {
       });
     }
     // validate
-    const { error } = categorySchema.validate(formData);
+    const { error } = categorySchema.validate(formData, { abortEarly: false });
     if (error) {
+      const errors = error.details.map((err) => err.message);
       return res.status(400).json({
-        message: error.details[0].message,
-      });
+        message: errors
+      })
     }
     const category = await Category.create(formData);
     if (!category || category.length === 0) {
@@ -99,25 +100,26 @@ export const updateCategory = async (req, res) => {
   try {
     const id = req.params.id;
     const body = req.body;
-    const { error } = categorySchema.validate(body, { abortEarly: false })
+    const { error } = categorySchema.validate(body, { abortEarly: false });
     if (error) {
+      const errors = error.details.map((err) => err.message);
       return res.status(400).json({
-        message: error.details[0].message
+        message: errors
       })
     }
-        const data = await Category.findOneAndUpdate({ _id: id }, body, { new: true })
-        if (!data || data.length === 0) {
-            return res.status(400).json({
-                message: "Cập nhật danh mục thất bại"
-            })
-        }
-        return res.status(200).json({
-            message: "Cập nhật danh mục thành công",
-            data
-        })
-    } catch (error) {
-        return res.status(400).json({
-            message: error.message
-        })
+    const data = await Category.findOneAndUpdate({ _id: id }, body, { new: true })
+    if (!data || data.length === 0) {
+      return res.status(400).json({
+        message: "Cập nhật danh mục thất bại"
+      })
     }
+    return res.status(200).json({
+      message: "Cập nhật danh mục thành công",
+      data
+    })
+  } catch (error) {
+    return res.status(400).json({
+      message: error.message
+    })
+  }
 }

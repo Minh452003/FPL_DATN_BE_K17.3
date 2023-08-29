@@ -9,7 +9,7 @@ const cartSchema = mongoose.Schema(
     },
     products: [
       {
-        productId: { type: mongoose.Schema.Types.ObjectId, required: true },
+        productId: String,
         product_name: String,
         product_price: Number,
         image: String,
@@ -18,7 +18,6 @@ const cartSchema = mongoose.Schema(
     ],
     total: {
       type: Number,
-      require: true,
     },
   },
   { timestamps: true, versionKey: false }

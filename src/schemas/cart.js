@@ -1,11 +1,19 @@
-import Joi from "joi";
+import Joi from 'joi';
 export const cartSchema = Joi.object({
-  _id: Joi.string(),
-  userId: Joi.string().required().messages({
-    "string.empty": "ID người dùng bắt buộc nhập",
-    "any.required": "Trường ID người dùng bắt buộc nhập",
-    "string.base": "ID người dùng phải là string",
+  productId: Joi.string().required().messages({
+    'any.required': 'productId không được để trống.',
+    'string.base': 'productId phải là một chuỗi.',
   }),
-  products: Joi.array().required(),
-  total: Joi.number().required().min(0),
+  product_name: Joi.string().messages({
+    'string.base': 'product_name phải là một chuỗi.',
+  }),
+  product_price: Joi.number().messages({
+    'number.base': 'product_price phải là một số.',
+  }),
+  image: Joi.string().messages({
+    'string.base': 'image phải là một chuỗi.',
+  }),
+  stock_quantity: Joi.number().messages({
+    'number.base': 'stock_quantity phải là một số.',
+  })
 });

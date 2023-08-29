@@ -38,11 +38,12 @@ export const getBrand = async function (req, res) {
 };
 export const createBrand = async function (req, res) {
   try {
-    const { error } = BrandSchema.validate(req.body);
+    const { error } = BrandSchema.validate(body, { abortEarly: false });
     if (error) {
+      const errors = error.details.map((err) => err.message);
       return res.status(400).json({
-        message: error.details.map((err) => err.message),
-      });
+        message: errors
+      })
     }
     const brand = await Brand.create(req.body);
     if (!brand) {
@@ -62,6 +63,13 @@ export const createBrand = async function (req, res) {
 };
 export const updateBrand = async function (req, res) {
   try {
+    const { error } = BrandSchema.validate(body, { abortEarly: false });
+    if (error) {
+      const errors = error.details.map((err) => err.message);
+      return res.status(400).json({
+        message: errors
+      })
+    }
     const brand = await Brand.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
     });

@@ -77,10 +77,11 @@ export const removeOrder = async (req, res) => {
 export const createOrder = async (req, res) => {
     try {
         const body = req.body;
-        const { error } = orderSchema.validate(body, { abortEarly: false })
+        const { error } = orderSchema.validate(body, { abortEarly: false });
         if (error) {
+            const errors = error.details.map((err) => err.message);
             return res.status(400).json({
-                message: error.details[0].message
+                message: errors
             })
         }
         const order = await Order.create(body)
@@ -105,10 +106,11 @@ export const updateOrder = async (req, res) => {
     try {
         const id = req.params.id;
         const body = req.body;
-        const { error } = orderSchema.validate(body, { abortEarly: false })
+        const { error } = orderSchema.validate(body, { abortEarly: false });
         if (error) {
+            const errors = error.details.map((err) => err.message);
             return res.status(400).json({
-                message: error.details[0].message
+                message: errors
             })
         }
         const updateOrder = await Order.findByIdAndUpdate(id, body, { new: true }).populate('products.productId status')

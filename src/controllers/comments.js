@@ -1,5 +1,6 @@
 
 import Comment from "../models/comments.js";
+import { CommentSchema } from "../schemas/comments.js";
 
 
 export const getCommentFromProduct = async (req, res) => {
@@ -7,7 +8,7 @@ export const getCommentFromProduct = async (req, res) => {
     try {
         const comments = await Comment.find({ productId: productId }).populate({
             path: 'userId',
-            select: 'name email image',
+            select: 'last_name email avatar',
         });
         if (!comments || comments.length === 0) {
             return res.status(404).json({
@@ -62,6 +63,13 @@ export const getOneComment = async (req, res) => {
 export const create = async (req, res) => {
 
     try {
+        const { error } = CommentSchema.validate(req.body, { abortEarly: false });
+        if (error) {
+            const errors = error.details.map((err) => err.message);
+            return res.status(400).json({
+                message: errors
+            })
+        }
         const comment = await Comment.create(req.body);
         return res.status(200).json({
             message: "Tạo comment thành công",
@@ -79,12 +87,17 @@ export const create = async (req, res) => {
 export const updateComment = async (req, res) => {
     const { id } = req.params;
     const { description } = req.body;
-
     try {
+        const { error } = CommentSchema.validate(req.body, { abortEarly: false });
+        if (error) {
+            const errors = error.details.map((err) => err.message);
+            return res.status(400).json({
+                message: errors
+            })
+        }
         const comment = await Comment.findByIdAndUpdate(id, { description }, {
             new: true
         });
-
         return res.status(200).json({
             message: 'Cập nhật thành công comment',
             comment

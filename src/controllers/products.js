@@ -59,8 +59,9 @@ export const addProduct = async (req, res) => {
         const body = req.body;
         const { error } = ProductSchema.validate(body, { abortEarly: false });
         if (error) {
+            const errors = error.details.map((err) => err.message);
             return res.status(400).json({
-                message: error.details[0].message
+                message: errors
             })
         }
         const product = await Product.create(body);
@@ -93,10 +94,11 @@ export const updateProduct = async (req, res) => {
         const body = req.body;
         const { categoryId } = req.body
         const product = await Product.findById(id)
-        const { error } = ProductSchema.validate(body, { abortEarly: false })
+        const { error } = ProductSchema.validate(body, { abortEarly: false });
         if (error) {
+            const errors = error.details.map((err) => err.message);
             return res.status(400).json({
-                message: error.details[0].message
+                message: errors
             })
         }
         await Category.findByIdAndUpdate(product.categoryId, {

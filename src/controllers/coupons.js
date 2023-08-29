@@ -5,10 +5,11 @@ import { CouponSchema } from "../schemas/coupons.js"
 export const createCoupons = async (req, res) => {
     const formDataCoupon = req.body
     try {
-        const { error } = CouponSchema.validate(formDataCoupon)
+        const { error } = CouponSchema.validate(formDataCoupon, { abortEarly: false });
         if (error) {
+            const errors = error.details.map((err) => err.message);
             return res.status(400).json({
-                message: error.details[0].message
+                message: errors
             })
         }
         const addCoupons = await Coupon.create(formDataCoupon)
@@ -93,13 +94,14 @@ export const updateCoupons = async (req, res) => {
     const id = req.params.id
     const body = req.body
     try {
-        const { error } = CouponSchema.validate(req.body, { abortEarly: false })
+        const { error } = CouponSchema.validate(body, { abortEarly: false });
         if (error) {
+            const errors = error.details.map((err) => err.message);
             return res.status(400).json({
-                message: error.details[0].message
+                message: errors
             })
         }
-        const updateCoupons = await Coupon.findByIdAndUpdate( id , body, { new: true })
+        const updateCoupons = await Coupon.findByIdAndUpdate(id, body, { new: true })
         if (!updateCoupons) {
             return res.status(404).json({
                 message: "Cập nhật phiếu giảm giá thất bại"
