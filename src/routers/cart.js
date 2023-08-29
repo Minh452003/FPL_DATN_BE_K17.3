@@ -7,6 +7,6 @@ cartRouter.get("/carts/:id", getOne);
 cartRouter.post("/carts/:id/create", create);
 cartRouter.delete("/carts/:id/remove", removeProduct);
 cartRouter.delete("/carts/:id/clears", clearUserCart);
-cartRouter.put("/carts/:id/change", changeQuantity);
+cartRouter.patch("/carts/:id/change", changeQuantity);
 
 export default cartRouter;
