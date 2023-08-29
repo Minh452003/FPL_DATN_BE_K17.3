@@ -1,7 +1,7 @@
 import Cart from '../models/cart.js'
 import User from "../models/user.js";
-import {ProductSchema} from '../schemas/products.js'
 import mongoose from 'mongoose'
+import { cartSchema } from '../schemas/cart.js';
 
 
 export const resetCart = async (idUser) => {
@@ -21,11 +21,11 @@ const addProduct = async (cartExist, productAdd, res) => {
     try {
         const productExist = cartExist.products.find((product) => product.productId === productAdd.productId)
         if (productExist) {
-            productExist.quantity += productAdd.quantity
-            cartExist.total += productAdd.quantity * productAdd.price
+            productExist.stock_quantity += productAdd.stock_quantity
+            cartExist.total += productAdd.stock_quantity * productAdd.product_price
         } else {
             cartExist.products.push(productAdd)
-            cartExist.total += productAdd.quantity * productAdd.price
+            cartExist.total += productAdd.stock_quantity * productAdd.product_price
         }
         const cartUpdated = await Cart.findOneAndUpdate({ _id: cartExist._id }, cartExist, { new: true })
         return res.status(200).json({
@@ -49,10 +49,11 @@ export const create = async (req, res) => {
                 message: 'Người dùng không tồn tại !'
             })
         }
-        const { error } = productCart.validate(req.body)
+        const { error } = cartSchema.validate(req.body, { abortEarly: false });
         if (error) {
+            const errors = error.details.map((err) => err.message);
             return res.status(400).json({
-                message: error.details[0].message
+                message: errors
             })
         }
         const cartExist = await Cart.findOne({ userId: userId })
@@ -67,7 +68,7 @@ export const create = async (req, res) => {
                     ...productNeedToAdd
                 }
             ],
-            total: productNeedToAdd.price * productNeedToAdd.quantity
+            total: productNeedToAdd.product_price * productNeedToAdd.stock_quantity
         })
         if (!newCart) {
             return res.json({
@@ -107,7 +108,7 @@ export const changeQuantity = async (req, res) => {
     try {
         const idUser = req.params.id
         const { idProduct = '' } = req.query
-        const { quantity } = req.body
+        const { stock_quantity } = req.body
         const userExist = await User.findOne({ _id: idUser })
         if (!userExist) {
             return res.json({
@@ -117,10 +118,10 @@ export const changeQuantity = async (req, res) => {
         const cart = await Cart.findOne({ userId: idUser })
         const productExt = cart.products.find((product) => product.productId === idProduct)
         if (productExt) {
-            productExt.quantity = quantity
+            productExt.stock_quantity = stock_quantity
             const productsUpdated = [...cart.products.filter((product) => product.productId !== idProduct), productExt]
             const totalUpdated = productsUpdated.reduce((total, product) => {
-                return (total += product.quantity * product.price)
+                return (total += product.stock_quantity * product.product_price)
             }, 0)
             const cartUpdated = await Cart.findOneAndUpdate(
                 { userId: idUser },
@@ -156,7 +157,7 @@ export const removeProduct = async (req, res) => {
         const cart = await Cart.findOne({ userId: idUser })
         const productsUpdated = cart.products.filter((product) => product.productId !== idProduct)
         const totalUpdated = productsUpdated.reduce((total, product) => {
-            return (total += product.quantity * product.price)
+            return (total += product.stock_quantity * product.product_price)
         }, 0)
         const cartUpdated = await Cart.findOneAndUpdate(
             { userId: idUser },
