@@ -6,7 +6,7 @@ export const orderSchema = Joi.object({
         "any.required": "Trường ID người dùng bắt buộc nhập",
         "string.base": "ID người dùng phải là string"
     }),
-    couponld: Joi.string(),
+    couponId: Joi.string(),
     products: Joi.array().required(),
     total: Joi.number().min(0).required().messages({
         "number.min": "Không được nhập số âm"

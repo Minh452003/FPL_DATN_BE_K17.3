@@ -7,9 +7,10 @@ const cartSchema = mongoose.Schema(
       ref: "User",
       required: true,
     },
-    couponld: {
+    couponId: {
       type: mongoose.Types.ObjectId,
-      ref: "Coupon"
+      ref: "Coupon",
+      default: null
     },
     products: [
       {
@@ -22,6 +23,10 @@ const cartSchema = mongoose.Schema(
     ],
     total: {
       type: Number,
+    },
+    originalTotal: {
+      type: Number,
+      default: 0,
     },
   },
   { timestamps: true, versionKey: false }

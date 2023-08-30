@@ -6,9 +6,9 @@ const orderSchema = mongoose.Schema({
     ref: "User",
     required: true
   },
-  couponld: {
+  couponId: {
     type: mongoose.Types.ObjectId,
-    ref: "Couponld"
+    ref: "Coupon"
   }
   ,
   products: [
