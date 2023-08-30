@@ -44,6 +44,9 @@ dependencies:
   mongoose:
     specifier: ^7.0.2
     version: 7.0.2
+  mongoose-delete:
+    specifier: ^1.0.1
+    version: 1.0.1(mongoose@7.0.2)
   mongoose-paginate-v2:
     specifier: ^1.7.1
     version: 1.7.1
@@ -1353,6 +1356,14 @@ packages:
       socks: 2.7.1
     optionalDependencies:
       saslprep: 1.0.3
+    dev: false
+
+  /mongoose-delete@1.0.1(mongoose@7.0.2):
+    resolution: {integrity: sha512-vm24uep4UJOW3Ac8H/gDxURcwvl+1Cc2H7tIJ0O8ejDEFJIUoksKS9HzTOM4SvEJusAVQ0JpjhbttHpevUz71A==}
+    peerDependencies:
+      mongoose: 5.x || 6.x || 7.x
+    dependencies:
+      mongoose: 7.0.2
     dev: false
 
   /mongoose-paginate-v2@1.7.1:

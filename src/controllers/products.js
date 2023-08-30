@@ -25,6 +25,39 @@ export const getAll = async (req, res) => {
         })
     }
 };
+export const getAllDelete = async (req, res) => {
+    try {
+        const product = await Product.findDeleted({deleted:true});
+
+        return res.status(200).json({
+            message: "Lấy tất cả sản phẩm đã bị xóa",
+            product
+        });
+    } catch (error) {
+        return res.status(400).json({
+            message: error,
+        })
+    }
+};
+export const restoreProduct = async (req, res) => {
+    try {
+        const restoredProduct = await Product.restore({ _id: req.params.id },{new:true});
+        if (!restoredProduct) {
+            return res.status(400).json({
+                message: "Sản phẩm không tồn tại hoặc đã được khôi phục trước đó.",
+            });
+        }
+
+        return res.status(200).json({
+            message: "Khôi phục sản phẩm thành công.",
+            product: restoredProduct,
+        });
+    } catch (error) {
+        return res.status(400).json({
+            message: error.message,
+        });
+    }
+};
 
 export const get = async (req, res) => {
     try {
@@ -49,9 +82,9 @@ export const get = async (req, res) => {
 export const remove = async (req, res) => {
     try {
         const id = req.params.id;
-        const product = await Product.findByIdAndDelete(id);
+        const product = await Product.deleteById(id);
         return res.status(200).json({
-            message: "Xoá sản phẩm thành công",
+            message: "Xoá sản phẩm thành công.chuyển sang thùng rác",
             product
         })
     } catch (error) {
@@ -60,7 +93,19 @@ export const remove = async (req, res) => {
         })
     }
 };
-
+export const removeForce = async (req, res) => {
+    try {
+        const product = await Product.deleteOne({_id:req.params.id});
+        return res.status(200).json({
+            message: "Xoá sản phẩm vĩnh viễn",
+            product
+        })
+    } catch (error) {
+        return res.status(400).json({
+            message: error,
+        })
+    }
+};
 export const addProduct = async (req, res) => {
     try {
         const body = req.body;
