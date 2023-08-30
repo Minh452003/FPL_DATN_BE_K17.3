@@ -1,12 +1,9 @@
-import express from "express";
-import { getAll, getOneById, remove, signin, signup } from "../controllers/auth.js";
-
+import express from 'express';
+import { forgotPassword, resetPassword } from '../controllers/user.js';
 
 const routerUser = express.Router();
 
-routerUser.get("/users", getAll);
-routerUser.get("/users/:id", getOneById);
-routerUser.delete("/users/:id", remove);
-routerUser.post("/signup", signup);
-routerUser.post("/signin", signin);
-export default routerUser
+routerUser.post('/forgotpassword', forgotPassword)
+routerUser.patch('/resetpassword/:token', resetPassword)
+
+export default routerUser;

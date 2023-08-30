@@ -34,12 +34,21 @@ const userSchema = new mongoose.Schema({
         type: String,
         default: "member",
     },
+    passwordResetToken: {
+        type: String
+    },
+    passwordResetExpires: {
+        type: String
+    },
+    passwordChangeAt: {
+        type: String
+    },
     createdAt: {
         type: Date,
         default: Date.now
-      }
+    }
 });
 userSchema.virtual("formattedCreatedAt").get(function () {
     return format(this.createdAt, "HH:mm a dd/MM/yyyy");
-  });
+});
 export default mongoose.model("User", userSchema);
