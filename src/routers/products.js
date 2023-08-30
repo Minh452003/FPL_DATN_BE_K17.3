@@ -5,9 +5,9 @@ const routerProducts = express.Router();
 
 routerProducts.get("/products", getAll);
 routerProducts.get("/products/:id", get);
-routerProducts.delete("/products/:id",checkPermission, remove);
-routerProducts.post("/products",checkPermission, addProduct);
-routerProducts.patch("/products/:id",checkPermission, updateProduct);
+routerProducts.delete("/products/:id", checkPermission, remove);
+routerProducts.post("/products", checkPermission, addProduct);
+routerProducts.patch("/products/:id", checkPermission, updateProduct);
 
 
 export default routerProducts;
