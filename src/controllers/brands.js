@@ -21,7 +21,6 @@ export const getAllBrands = async (req, res) => {
   }
 };
 
-
 export const getBrand = async (req, res) => {
   try {
     const brand = await Brand.findById(req.params.id);
@@ -41,8 +40,6 @@ export const getBrand = async (req, res) => {
     });
   }
 };
-
-
 export const createBrand = async (req, res) => {
   try {
     const { brand_name } = req.body;
@@ -65,6 +62,7 @@ export const createBrand = async (req, res) => {
       return res.status(404).json({
         message: 'Không thể thêm thương hiệu',
       });
+      
     }
     return res.status(200).json({
       message: 'Thêm thương hiệu thành công',
