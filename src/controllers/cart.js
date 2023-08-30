@@ -17,6 +17,7 @@ export const resetCart = async (idUser) => {
     }
 }
 
+
 const addProduct = async (cartExist, productAdd, res) => {
     try {
         const productExist = cartExist.products.find((product) => product.productId === productAdd.productId)
@@ -34,11 +35,13 @@ const addProduct = async (cartExist, productAdd, res) => {
         })
     } catch (error) {
         console.log(error.message)
-        return res.status(404).json({
+        return res.status(400).json({
             message: 'Thêm vào giỏ hàng không thành công'
         })
     }
 }
+
+
 export const create = async (req, res) => {
     try {
         const userId = req.params.id
@@ -71,11 +74,11 @@ export const create = async (req, res) => {
             total: productNeedToAdd.product_price * productNeedToAdd.stock_quantity
         })
         if (!newCart) {
-            return res.json({
-                message: 'Thêm vào giỏ hàng không thành công'
+            return res.status(400).json({
+                message: 'Thêm vào giỏ hàng thất bại'
             })
         }
-        return res.json({
+        return res.status(200).json({
             message: 'Thêm vào giỏ hàng thành công',
             data: newCart
         })
@@ -85,16 +88,18 @@ export const create = async (req, res) => {
         })
     }
 }
+
+
 export const getOne = async (req, res) => {
     try {
         const cart = await Cart.findOne({ userId: req.params.id })
         if (!cart) {
-            return res.json({
+            return res.status(404).json({
                 message: 'Không tìm thấy giỏ hàng',
                 data: []
             })
         }
-        res.json({
+        return res.status(200).json({
             message: 'Lấy giỏ hàng thành công',
             data: cart
         })
@@ -104,6 +109,8 @@ export const getOne = async (req, res) => {
         })
     }
 }
+
+
 export const changeQuantity = async (req, res) => {
     try {
         const idUser = req.params.id
@@ -111,7 +118,7 @@ export const changeQuantity = async (req, res) => {
         const { stock_quantity } = req.body
         const userExist = await User.findOne({ _id: idUser })
         if (!userExist) {
-            return res.json({
+            return res.status(404).json({
                 message: 'Vui lòng đăng nhập!'
             })
         }
@@ -129,12 +136,12 @@ export const changeQuantity = async (req, res) => {
                 { new: true }
             )
 
-            return res.json({
+            return res.status(200).json({
                 message: 'Thay đổi sản phẩm thành công',
                 data: cartUpdated
             })
         }
-        return res.json({
+        return res.status(400).json({
             message: 'Sản phẩm không tồn tại!',
             data: {}
         })
@@ -144,13 +151,15 @@ export const changeQuantity = async (req, res) => {
         })
     }
 }
+
+
 export const removeProduct = async (req, res) => {
     try {
         const idUser = req.params.id
         const { idProduct = '' } = req.query
         const userExist = await User.findOne({ _id: idUser })
         if (!userExist) {
-            return res.json({
+            return res.status(404).json({
                 message: 'Vui lòng đăng nhập!'
             })
         }
@@ -164,7 +173,7 @@ export const removeProduct = async (req, res) => {
             { $set: { products: productsUpdated, total: totalUpdated } },
             { new: true }
         )
-        res.json({
+       return res.status(200).json({
             message: 'Xóa sản phẩm thành công',
             data: cartUpdated
         })
@@ -188,7 +197,7 @@ export const clearUserCart = async (req, res) => {
         cartExist.total = 0; // Đặt tổng giá trị về 0
         const cartUpdated = await Cart.findOneAndUpdate({ _id: cartExist._id }, cartExist, { new: true });
 
-        return res.json({
+        return res.status(200).json({
             message: 'Xoá tất cả sản phẩm trong giỏ hàng thành công',
             data: cartUpdated,
         });

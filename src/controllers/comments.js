@@ -1,19 +1,18 @@
-
 import Comment from "../models/comments.js";
 import { CommentSchema } from "../schemas/comments.js";
 import Product from "../models/products.js";
 import User from "../models/user.js";
 
 export const getCommentFromProduct = async (req, res) => {
-    const { productId } = req.params;
     try {
+        const { productId } = req.params;
         const comments = await Comment.find({ productId: productId }).populate({
             path: 'userId',
             select: 'last_name email avatar',
         });
         if (!comments || comments.length === 0) {
             return res.status(404).json({
-                message: 'Không tìm thấy bình luận',
+                message: 'Không tìm thấy theo sản phẩm bình luận',
             });
         }
 
@@ -26,7 +25,7 @@ export const getCommentFromProduct = async (req, res) => {
         }));
 
         return res.status(200).json({
-            message: 'Lấy thành công comment',
+            message: 'Lấy bình luận theo sản phẩm thành công',
             comments: formattedComments,
         });
     } catch (error) {
@@ -37,11 +36,9 @@ export const getCommentFromProduct = async (req, res) => {
 };
 
 
-
 export const getOneComment = async (req, res) => {
-    const { id } = req.params;
-
     try {
+        const { id } = req.params;
         const comment = await Comment.findById(id);
         if (!comment) {
             return res.status(404).json({
@@ -49,7 +46,7 @@ export const getOneComment = async (req, res) => {
             });
         }
         return res.status(200).json({
-            message: "Lấy thành công comment",
+            message: "Lấy thành công 1 bình luận",
             comment,
         });
     }
@@ -61,8 +58,8 @@ export const getOneComment = async (req, res) => {
 }
 
 export const create = async (req, res) => {
-    const { userId, rating, description, productId } = req.body;
     try {
+        const { userId, rating, description, productId } = req.body;
         const { error } = CommentSchema.validate(req.body, { abortEarly: false });
         if (error) {
             const errors = error.details.map((err) => err.message);
@@ -130,48 +127,45 @@ export const create = async (req, res) => {
        });
      }
     } catch (error) {
-        res.status(400).json({
+        return res.status(400).json({
             message: error,
         });
     }
 }
 
 
-
 export const updateComment = async (req, res) => {
-    const { id } = req.params;
-    const { description } = req.body;
     try {
-        const { error } = CommentSchema.validate(req.body, { abortEarly: false });
+        const id = req.params.id;
+        const body = req.body;
+        const { error } = CommentSchema.validate(body, { abortEarly: false });
         if (error) {
             const errors = error.details.map((err) => err.message);
             return res.status(400).json({
                 message: errors
             })
         }
-        const comment = await Comment.findByIdAndUpdate(id, { description }, {
-            new: true
-        });
+        const comment = await Comment.findByIdAndUpdate(id, body, { new: true });
         return res.status(200).json({
-            message: 'Cập nhật thành công comment',
+            message: 'Cập nhật bình luận thành công',
             comment
         });
     }
     catch (error) {
-        res.status(400).json({
+        return res.status(400).json({
             message: error,
         });
     }
 }
 
 
-
 export const removeComment = async (req, res) => {
     const { id } = req.params;
     try {
-        await Comment.findByIdAndDelete(id);
+        const comment = await Comment.findByIdAndDelete(id);
         return res.status(200).json({
             message: 'Xóa comment thành công',
+            comment
         });
     } catch (error) {
         res.status(400).json({
@@ -179,6 +173,8 @@ export const removeComment = async (req, res) => {
         });
     }
 }
+
+
 export const getAll = async (req, res) => {
     try {
         const comments = await Comment.find().populate({
@@ -188,7 +184,7 @@ export const getAll = async (req, res) => {
             path: 'userId',
             select: 'name email image',
         });
-        res.status(200).json({
+        return res.status(200).json({
             message: 'Lấy tất cả bình luận thành công',
             comments,
         });

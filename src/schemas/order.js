@@ -8,12 +8,14 @@ export const orderSchema = Joi.object({
     }),
     couponld: Joi.string(),
     products: Joi.array().required(),
-    total: Joi.number().required().min(0),
+    total: Joi.number().min(0).required().messages({
+        "number.min": "Không được nhập số âm"
+    }),
     status: Joi.string(),
-    phone: Joi.string().max(12).required().messages({
+    phone: Joi.string().max(10).required().messages({
         "string.empty": "Mời điền số điện thoại",
-        "any.required": "bắt buộc thêm số điện thoại",
-        "string.max": "Số phải phải có ít hơn 12 số",
+        "any.required": "Bắt buộc thêm số điện thoại",
+        "string.max": "Số phải phải có ít hơn 10 số",
     }),
     address: Joi.string().required().messages({
         "string.empty": "Thêm địa chỉ ",

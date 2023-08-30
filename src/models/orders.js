@@ -22,7 +22,7 @@ const orderSchema = mongoose.Schema({
   ],
   total: {
     type: Number,
-    require: true
+    required: true
   },
   status: {
     type: mongoose.Types.ObjectId,
@@ -35,7 +35,7 @@ const orderSchema = mongoose.Schema({
   },
   address: {
     type: String,
-    require: true
+    required: true
   },
   notes: {
     type: String

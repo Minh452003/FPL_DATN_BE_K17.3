@@ -1,54 +1,76 @@
-
 import Status from "../models/status.js";
+import { statusSchema } from "../schemas/status.js";
 
 export const getStatusList = async (req, res) => {
   try {
-    const statusList = await Status.find();
-    res.status(200).json(statusList);
+    const status = await Status.find();
+    if (status.length === 0) {
+      return res.status(404).json({
+        message: 'Lấy tất cả trạng thái thất bại',
+      });
+    }
+    return res.status(200).json({
+      message: " Lấy tất cả trạng thái thành công",
+      status
+    });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    return res.status(400).json({
+      message: error.message,
+    });
   }
 };
+
+
 export const createStatus = async (req, res) => {
   try {
-
-    const newStatus = await Status.create(req.body);
-
-    res.status(201).json({
-      message: 'Trạng thái đã được tạo thành công',
-      data: newStatus,
+    const { error } = statusSchema.validate(req.body);
+    if (error) {
+      return res.status(400).json({
+        message: error.details.map((err) => err.message),
+      });
+    }
+    const status = await Status.create(req.body);
+    if (!status) {
+      return res.status(400).json({
+        message: 'Thêm trạng thái thất bại',
+      });
+    }
+    return res.status(200).json({
+      message: 'Thêm trạng thái thành công',
+      status,
     });
   } catch (error) {
-    res.status(400).json({
-      message: 'Không thể tạo trạng thái',
-      error: error.message,
+    return res.status(400).json({
+      message: error,
     });
   }
 };
+
+
 export const updateStatus = async (req, res) => {
   try {
     const id = req.params.id;
     const body = req.body;
-    const data = await Status.findByIdAndUpdate({ _id: id }, body, {
-      new: true,
-    });
-    if (!data) {
-      return res.status(404).json({
-        message: 'Trạng thái không tồn tại',
-      });
-    }
-    if (data.length === 0) {
+    const { error } = statusSchema.validate(body, { abortEarly: false });
+    if (error) {
+      const errors = error.details.map((err) => err.message)
       return res.status(400).json({
-        message: "Cập nhật trạng thái thất bại",
+        message: errors
       })
+    }
+    const status = await Status.findByIdAndUpdate(id, body, { new: true, });
+    if (!status) {
+      return res.status(404).json({
+        message: 'Cập nhật trạng thái thất bại',
+      });
     }
     return res.status(200).json({
       message: "Cập nhật trạng thái thành công",
-      data,
+      status
     })
   } catch (error) {
     return res.status(400).json({
-      message: error,
+      message: error.message
     })
   }
 }

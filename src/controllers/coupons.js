@@ -3,8 +3,8 @@ import { CouponSchema } from "../schemas/coupons.js"
 
 
 export const createCoupons = async (req, res) => {
-    const formDataCoupon = req.body
     try {
+        const formDataCoupon = req.body
         const { error } = CouponSchema.validate(formDataCoupon, { abortEarly: false });
         if (error) {
             const errors = error.details.map((err) => err.message);
@@ -12,15 +12,15 @@ export const createCoupons = async (req, res) => {
                 message: errors
             })
         }
-        const addCoupons = await Coupon.create(formDataCoupon)
-        if (!addCoupons) {
+        const coupon = await Coupon.create(formDataCoupon)
+        if (!coupon) {
             return res.status(404).json({
                 error: "Dùng phiếu giảm giá thất bại"
             })
         }
         return res.status(200).json({
             message: "Dùng phiếu giảm giá thành công",
-            addCoupons
+            coupon
         })
     } catch (error) {
         return res.status(400).json({
@@ -39,7 +39,7 @@ export const getOneCoupons = async (req, res) => {
             })
         }
         return res.status(200).json({
-            message: "Lấy 1 phiếu đơn hàng thành công",
+            message: "Lấy 1 phiếu giảm giá thành công",
             coupon
         })
     } catch (error) {
@@ -70,17 +70,17 @@ export const getAllCoupons = async (req, res) => {
 }
 
 
-
 export const removeCoupons = async (req, res) => {
     try {
-        const removeCoupons = await Coupon.findByIdAndDelete(req.params.id);
-        if (!removeCoupons) {
+        const coupon = await Coupon.findByIdAndDelete(req.params.id);
+        if (!coupon) {
             return res.status(404).json({
                 message: "Xóa phiếu giảm giá thất bại"
             })
         }
         return res.status(200).json({
-            message: "Xóa phiếu giảm giá thành công!"
+            message: "Xóa phiếu giảm giá thành công!",
+            coupon
         })
     } catch (error) {
         return res.status(400).json({
@@ -91,9 +91,9 @@ export const removeCoupons = async (req, res) => {
 
 
 export const updateCoupons = async (req, res) => {
-    const id = req.params.id
-    const body = req.body
     try {
+        const id = req.params.id
+        const body = req.body
         const { error } = CouponSchema.validate(body, { abortEarly: false });
         if (error) {
             const errors = error.details.map((err) => err.message);
@@ -101,15 +101,15 @@ export const updateCoupons = async (req, res) => {
                 message: errors
             })
         }
-        const updateCoupons = await Coupon.findByIdAndUpdate(id, body, { new: true })
-        if (!updateCoupons) {
+        const coupon = await Coupon.findByIdAndUpdate(id, body, { new: true })
+        if (!coupon) {
             return res.status(404).json({
                 message: "Cập nhật phiếu giảm giá thất bại"
             })
         }
         return res.status(200).json({
             message: "Cập nhật phiếu giảm giá thành công",
-            updateCouponsSuccess: updateCoupons
+            updateCouponsSuccess: coupon
         })
     } catch (error) {
         return res.status(400).json({
