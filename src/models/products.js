@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import mongoosePaginate from "mongoose-paginate-v2";
-
+import mongooseDelete from "mongoose-delete";
 const productsSchema = mongoose.Schema({
     product_name: {
         type: String,
@@ -37,4 +37,6 @@ const productsSchema = mongoose.Schema({
 },
     { timestamps: true, versionKey: false });
 productsSchema.plugin(mongoosePaginate);
+productsSchema.plugin(mongooseDelete, { overrideMethods: 'all',deletedAt : true  });
+
 export default mongoose.model("Product", productsSchema);
