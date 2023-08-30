@@ -7,6 +7,10 @@ const cartSchema = mongoose.Schema(
       ref: "User",
       required: true,
     },
+    couponld: {
+      type: mongoose.Types.ObjectId,
+      ref: "Coupon"
+    },
     products: [
       {
         productId: String,

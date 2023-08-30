@@ -2,6 +2,7 @@ import Cart from '../models/cart.js'
 import User from "../models/user.js";
 import mongoose from 'mongoose'
 import { cartSchema } from '../schemas/cart.js';
+import Coupon from "../models/coupons.js"
 
 
 export const resetCart = async (idUser) => {
@@ -195,5 +196,63 @@ export const clearUserCart = async (req, res) => {
     } catch (error) {
         console.error(error); // In ra thông tin lỗi cụ thể
         return res.status(500).json({ message: 'Xoá tất cả sản phẩm trong giỏ hàng không thành công' });
+    }
+};
+
+// 
+// Áp dụng mã phiếu giảm giá vào giỏ hàng
+// Sử dụng logic của bạn để tính toán giảm giá và cập nhật tổng giỏ hàng
+const applyCouponToCart = (cart, coupon) => {
+    // Giả sử phiếu giảm giá có một trường discountPercent để xác định phần trăm giảm giá
+    if (coupon.discount_amount) {
+        // Tính toán giảm giá dựa trên phần trăm và tổng giỏ hàng
+        const discountAmount = (coupon.discount_amount / 100) * cart.total;
+
+        // Cập nhật giỏ hàng với giảm giá
+        cart.total -= discountAmount;
+
+        // Đánh dấu giỏ hàng đã áp dụng mã phiếu giảm giá
+        cart.couponId = coupon._id;
+    }
+
+    // Cập nhật các giá trị khác nếu cần
+    // cart.someOtherField = ...;
+
+    return cart;
+};
+
+// Sử dụng hàm applyCouponToCart trong route handler
+export const applyCoupon = async (req, res) => {
+    try {
+        const userId = req.params.id;
+        const couponld = req.body.couponld;
+
+        // Kiểm tra xem người dùng có giỏ hàng không
+        const cart = await Cart.findOne({ userId });
+
+        if (!cart) {
+            return res.status(404).json({ message: 'Không tìm thấy giỏ hàng cho người dùng này' });
+        }
+
+        // Kiểm tra xem mã phiếu giảm giá có tồn tại không
+        const coupon = await Coupon.findById(couponld);
+
+        if (!coupon) {
+            return res.status(404).json({ message: 'Mã phiếu giảm giá không hợp lệ' });
+        }
+
+        // Áp dụng mã phiếu giảm giá vào giỏ hàng bằng cách gọi hàm applyCouponToCart
+        const updatedCart = applyCouponToCart(cart, coupon);
+
+        // Lưu giỏ hàng sau khi cập nhật
+        await updatedCart.save();
+
+        return res.json({
+            message: 'Áp dụng phiếu giảm giá thành công',
+            data: updatedCart,
+        });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Có lỗi xảy ra khi áp dụng phiếu giảm giá' });
     }
 };
