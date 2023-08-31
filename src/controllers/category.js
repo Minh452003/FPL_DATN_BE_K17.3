@@ -36,6 +36,20 @@ export const getAllCategory = async (req, res) => {
   }
 };
 
+export const getAllDelete = async (req, res) => {
+  try {
+      const category = await Category.findDeleted({deleted:true});
+
+      return res.status(200).json({
+          message: "Lấy tất cả danh mục đã bị xóa",
+          category
+      });
+  } catch (error) {
+      return res.status(400).json({
+          message: error,
+      })
+  }
+};
 export const getCategoryById = async (req, res) => {
   try {
     const category = await Category.findById(req.params.id);
@@ -58,9 +72,9 @@ export const getCategoryById = async (req, res) => {
 export const removeCategory = async (req, res) => {
   try {
     const id = req.params.id;
-    const category = await Category.findByIdAndDelete(id);
+    const category = await Category.deleteById(id);
     return res.status(200).json({
-      message: "Xoá Danh mục thành công!",
+      message: "Xoá Danh mục thành công.!",
       category
     });
   } catch (error) {
@@ -70,6 +84,19 @@ export const removeCategory = async (req, res) => {
   }
 };
 
+export const removeForce = async (req, res) => {
+  try {
+      const category = await Category.deleteOne({_id:req.params.id});
+      return res.status(200).json({
+          message: "Xoá sản phẩm vĩnh viễn",
+          category
+      })
+  } catch (error) {
+      return res.status(400).json({
+          message: error,
+      })
+  }
+};
 export const addCategory = async (req, res) => {
   try {
     const { category_name } = req.body;
@@ -103,7 +130,25 @@ export const addCategory = async (req, res) => {
     });
   }
 };
+export const restoreCategory = async (req, res) => {
+  try {
+      const restoredCategory = await Category.restore({ _id: req.params.id },{new:true});
+      if (!restoredCategory) {
+          return res.status(400).json({
+              message: "Sản phẩm không tồn tại hoặc đã được khôi phục trước đó.",
+          });
+      }
 
+      return res.status(200).json({
+          message: "Khôi phục sản phẩm thành công.",
+          category: restoredCategory,
+      });
+  } catch (error) {
+      return res.status(400).json({
+          message: error.message,
+      });
+  }
+};
 export const updateCategory = async (req, res) => {
   try {
     const id = req.params.id;

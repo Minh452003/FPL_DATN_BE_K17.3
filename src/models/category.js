@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import mongoosePaginate from "mongoose-paginate-v2";
+import mongooseDelete from "mongoose-delete";
 
 const categorySchema = mongoose.Schema({
   category_name: {
@@ -22,4 +23,5 @@ const categorySchema = mongoose.Schema({
   { timestamps: true, versionKey: false });
 
 categorySchema.plugin(mongoosePaginate);
+categorySchema.plugin(mongooseDelete, { overrideMethods: 'all',deletedAt : true  });
 export default mongoose.model("Category", categorySchema)
