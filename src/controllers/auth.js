@@ -1,7 +1,7 @@
 import user from "../models/user.js";
 import bcrypt from "bcryptjs";
 import User from "../models/user.js";
-import { signinSchema, signupSchema } from "../schemas/auth.js";
+import { changePasswordSchema, signinSchema, signupSchema } from "../schemas/auth.js";
 import jwt from "jsonwebtoken";
 import nodemailer from "nodemailer"
 
@@ -158,3 +158,40 @@ export const signin = async (req, res) => {
         });
     }
 };
+
+export const changePassword = async (req, res) => {
+    try {
+      const { error } = changePasswordSchema.validate(body, { abortEarly: false });
+      if (error) {
+        const errors = error.details.map((err) => err.message);
+        return res.status(400).json({
+          message: errors,
+        });
+      }
+  
+      const user = await user.findOne({ email: req.body.email });
+  
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+  
+      // Compare old password
+      const passwordMatch = await bcrypt.compare(
+        req.body.oldPassword,
+        user.password
+      );
+      if (!passwordMatch) {
+        return res.status(400).json({ error: "Invalid old password" });
+      }
+  
+      // Hash and update new password
+      const saltRounds = 10;
+      const hashedPassword = await bcrypt.hash(req.body.newPassword, saltRounds);
+      user.password = hashedPassword;
+  
+      await user.save();
+      return res.status(200).json({ message: "Password changed successfully" });
+    } catch (error) {
+      return res.status(500).json({ message: "Failed!" });
+    }
+  };
