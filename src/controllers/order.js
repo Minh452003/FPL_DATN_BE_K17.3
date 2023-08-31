@@ -1,5 +1,6 @@
 import Order from "../models/orders.js"
 import { orderSchema } from "../schemas/order.js";
+import Coupon from "../models/coupons.js"
 
 
 export const getOrderByUserId = async (req, res) => {
@@ -66,7 +67,7 @@ export const removeOrder = async (req, res) => {
         }
         return res.status(200).json({
             message: "Xóa đơn hàng thành công!",
-            
+
         })
     } catch (error) {
         return res.status(400).json({
@@ -85,23 +86,39 @@ export const createOrder = async (req, res) => {
                 message: errors
             })
         }
-        const order = await Order.create(body)
+
+        // Kiểm tra xem có phiếu giảm giá được sử dụng trong đơn hàng không
+        if (body.couponId !== null) {
+            // Tăng số lượng phiếu giảm giá đã sử dụng lên 1
+            const coupon = await Coupon.findById(body.couponId);
+            if (coupon) {
+                if (coupon.coupon_quantity > 0) {
+                    coupon.coupon_quantity -= 1;
+                    await coupon.save();
+                } else {
+                    return res.status(400).json({ message: 'Phiếu giảm giá đã hết lượt sử dụng' });
+                }
+            }
+        }
+
+        const order = await Order.create(body);
         if (!order) {
             return res.status(404).json({
                 error: "Đặt hàng thất bại"
             })
         }
+
         return res.status(200).json({
             message: "Đặt hàng thành công",
             order
-        })
+        });
     } catch (error) {
         return res.status(400).json({
             message: error.message
-        })
-
+        });
     }
 }
+
 
 export const updateOrder = async (req, res) => {
     try {

@@ -15,11 +15,11 @@ export const createCoupons = async (req, res) => {
         const coupon = await Coupon.create(formDataCoupon)
         if (!coupon) {
             return res.status(404).json({
-                error: "Dùng phiếu giảm giá thất bại"
+                error: "Tạo phiếu giảm giá thất bại"
             })
         }
         return res.status(200).json({
-            message: "Dùng phiếu giảm giá thành công",
+            message: "Tạo phiếu giảm giá thành công",
             coupon
         })
     } catch (error) {

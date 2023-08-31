@@ -6,11 +6,11 @@ const orderSchema = mongoose.Schema({
     ref: "User",
     required: true
   },
-  couponld: {
-    type: mongoose.Types.ObjectId,
-    ref: "Couponld"
-  }
-  ,
+  couponId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Coupon",
+    required: false  // Đặt required là false để cho phép giá trị null
+  },
   products: [
     {
       productId: { type: mongoose.Schema.Types.ObjectId, required: true },

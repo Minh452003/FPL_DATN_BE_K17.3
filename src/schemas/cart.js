@@ -15,5 +15,6 @@ export const cartSchema = Joi.object({
   }),
   stock_quantity: Joi.number().messages({
     'number.base': 'stock_quantity phải là một số.',
-  })
+  }),
+  couponId: Joi.string(),
 });
