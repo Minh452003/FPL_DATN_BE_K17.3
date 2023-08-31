@@ -3,6 +3,7 @@ import User from "../models/user.js";
 import mongoose from 'mongoose'
 import { cartSchema } from '../schemas/cart.js';
 import Coupon from "../models/coupons.js"
+import Order from "../models/orders.js"
 
 
 export const resetCart = async (idUser) => {
@@ -254,8 +255,16 @@ export const applyCoupon = async (req, res) => {
         }
 
         const coupon = await Coupon.findById(couponId);
+        if (cart.total < coupon.min_purchase_amount) {
+            return res.status(404).json({ message: 'Không đủ điều kiện để sử dụng phiếu giảm giá' })
+        }
         if (!coupon) {
             return res.status(404).json({ message: 'Mã phiếu giảm giá không hợp lệ' });
+        }
+        // check xem người dùng đã sử dụng phiếu giảm giá này để order hay chưa
+        const orderWithCoupon = await Order.findOne({ couponId: couponId });
+        if (orderWithCoupon) {
+            return res.status(400).json({ message: 'Phiếu giảm giá đã được sử dụng' });
         }
 
         // Kiểm tra xem phiếu giảm giá có quá hạn không

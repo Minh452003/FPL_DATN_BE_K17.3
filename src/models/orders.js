@@ -7,10 +7,10 @@ const orderSchema = mongoose.Schema({
     required: true
   },
   couponId: {
-    type: mongoose.Types.ObjectId,
-    ref: "Coupon"
-  }
-  ,
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Coupon",
+    required: false  // Đặt required là false để cho phép giá trị null
+  },
   products: [
     {
       productId: { type: mongoose.Schema.Types.ObjectId, required: true },
