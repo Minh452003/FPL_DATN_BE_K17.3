@@ -1,17 +1,21 @@
-
-import Session from '../schemas/logout.js';
-
+import { logoutSchema } from "../schemas/logout.js";
+ 
 export const logout = async (req, res) => {
-    try {
-        // Lấy userId của người dùng từ request (có thể dựa vào phiên đăng nhập hoặc thông tin người dùng)
-        const userId = req.body.userId; // Đây là ví dụ, bạn có thể thay đổi cách lấy userId tùy theo cơ cấu của ứng dụng của bạn
+  try {
+      const { error } = logoutSchema.validate(req.body, { abortEarly: false });
+      if (error) {
+          const errors = error.details.map((err) => err.message);
+          return res.status(400).json({
+              messages: "Bạn chưa đăng nhập. Vui lòng đăng nhập trước khi đăng xuất",
+          });
+      }
 
-        // Xóa phiên đăng nhập của người dùng khỏi cơ sở dữ liệu
-        await Session.deleteMany({ userId });
-
-        return res.status(200).json({ message: 'Đăng xuất thành công' });
-    } catch (error) {
-        return res.status(500).json({ message: 'Lỗi server' });
-    }
+      return res.status(200).json({
+          message: "Đăng xuất thành công",
+      });
+  } catch (error) {
+      return res.status(500).json({
+          message: error
+      });
+  }
 };
-
