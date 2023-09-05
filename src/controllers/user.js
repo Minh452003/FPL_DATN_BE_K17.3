@@ -94,3 +94,33 @@ export const resetPassword = async (req, res) => {
         })
     }
 }
+
+
+export const changePassword = async (req, res) => {
+    try {
+        const user = req.user
+        const isMatch = await bcrypt.compare(user.password, req.body.currentPassword)
+        if (isMatch) {
+            return res.status(400).json({
+                message: "Mật khẩu hiện tại không đúng"
+            })
+        }
+        const hashedPassword = await bcrypt.hash(req.body.password, 10);
+        const userNew = await User.findByIdAndUpdate(req.user._id, { password: hashedPassword }, { new: true });
+        if (!userNew) {
+            return res.status(400).json({
+                message: "Không tìm thấy người dùng"
+            })
+        }
+        userNew.passwordChangeAt = Date.now()
+        const token = jwt.sign({ id: userNew._id }, "DATN", { expiresIn: "1d" })
+        return res.status(200).json({
+            message: "Đổi mật khẩu thành công",
+            token
+        })
+    } catch (error) {
+        return res.status(400).json({
+            message: error.message
+        })
+    }
+}

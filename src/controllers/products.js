@@ -25,6 +25,7 @@ export const getAll = async (req, res) => {
         })
     }
 };
+
 export const getAllDelete = async (req, res) => {
     try {
         const product = await Product.findDeleted({deleted:true});
@@ -39,6 +40,7 @@ export const getAllDelete = async (req, res) => {
         })
     }
 };
+
 export const restoreProduct = async (req, res) => {
     try {
         const restoredProduct = await Product.restore({ _id: req.params.id },{new:true});
@@ -93,6 +95,7 @@ export const remove = async (req, res) => {
         })
     }
 };
+
 export const removeForce = async (req, res) => {
     try {
         const product = await Product.deleteOne({_id:req.params.id});
@@ -106,6 +109,7 @@ export const removeForce = async (req, res) => {
         })
     }
 };
+
 export const addProduct = async (req, res) => {
     try {
         const body = req.body;
@@ -138,7 +142,6 @@ export const addProduct = async (req, res) => {
 
     }
 }
-
 
 export const updateProduct = async (req, res) => {
     try {
