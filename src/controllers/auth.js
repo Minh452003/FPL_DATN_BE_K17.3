@@ -5,6 +5,9 @@ import { signinSchema, signupSchema } from "../schemas/auth.js";
 import jwt from "jsonwebtoken";
 import nodemailer from "nodemailer"
 
+let refreshTokens = [];
+
+// Lấy tất cả user
 export const getAll = async (req, res) => {
     try {
         const data = await user.find();
@@ -19,6 +22,7 @@ export const getAll = async (req, res) => {
     }
 };
 
+// Lấy 1 user
 export const getOneById = async (req, res) => {
     try {
         const id = req.params.id;
@@ -41,6 +45,8 @@ export const getOneById = async (req, res) => {
     }
 };
 
+
+// Xóa user
 export const remove = async (req, res) => {
     try {
         const id = req.params.id;
@@ -56,6 +62,7 @@ export const remove = async (req, res) => {
     }
 };
 
+// Đăng kí
 export const signup = async (req, res) => {
     try {
         const { first_name, last_name, email, phone, address, avatar, password } = req.body;
@@ -120,7 +127,29 @@ export const signup = async (req, res) => {
     }
 };
 
+// Generate Access Token 
+export const generateAccessToken = (user) => {
+    return jwt.sign(
+        {
+            id: user.id
+        },
+        process.env.JWT_ACCESS_KEY,
+        { expiresIn: "2h" }
+    )
+}
 
+// Generate Refresh Token 
+export const generateRefreshToken = (user) => {
+    return jwt.sign(
+        {
+            id: user.id
+        },
+        process.env.JWT_REFRESH_KEY,
+        { expiresIn: "365d" }
+    )
+}
+
+// Đăng nhập
 export const signin = async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -146,12 +175,26 @@ export const signin = async (req, res) => {
                 message: "Mật khẩu không đúng",
             });
         }
-        const token = jwt.sign({ id: user._id }, "DATN", { expiresIn: "1d" });
-        return res.status(200).json({
-            message: "Đăng nhập thành công",
-            accessToken: token,
-            user,
-        });
+        if (user && password) {
+            const accessToken = generateAccessToken(user);
+            const refreshToken = generateRefreshToken(user);
+            refreshTokens.push(refreshToken);
+            // Lưu vào cookies
+            res.cookie("refreshToken", refreshToken, {
+                httpOnly: true,
+                secure: false,
+                path: "/",
+                // Ngăn chặn tấn công CSRF -> Những cái http, request chỉ được đến từ sameSite
+                sameSite: "strict"
+            })
+            const { password, ...users } = user._doc
+            return res.status(200).json({
+                message: "Đăng nhập thành công",
+                ...users,
+                accessToken: accessToken,
+
+            });
+        }
     } catch (error) {
         return res.status(400).json({
             message: error,
@@ -159,3 +202,46 @@ export const signin = async (req, res) => {
     }
 };
 
+// Refresh Token
+export const refreshToken = async (req, res) => {
+    try {
+        if (!req.cookies || !req.cookies.refreshToken) {
+            return res.status(401).json({
+                message: "Bạn chưa đăng nhập. Vui lòng đăng nhập!"
+            })
+        }
+
+        const refreshToken = req.cookies.refreshToken;
+        if (!refreshTokens.includes(refreshToken)) {
+            return res.status(403).json({
+                message: "Refresh Token không hợp lệ"
+            })
+        }
+        jwt.verify(refreshToken, process.env.JWT_REFRESH_KEY, (err, user) => {
+            if (err) {
+                console.log(err);
+            }
+            refreshTokens = refreshTokens.filter((token) => token !== refreshToken)
+            // Nếu không lỗi thì sẽ tạo access Token và refresh Token 
+            const newAccessToken = generateAccessToken(user);
+            const newRefreshToken = generateRefreshToken(user);
+            refreshTokens.push(newRefreshToken);
+            res.cookie("refreshToken", newRefreshToken, {
+                httpOnly: true,
+                secure: false,
+                path: "/",
+                // Ngăn chặn tấn công CSRF -> Những cái http, request chỉ được đến từ sameSite
+                sameSite: "strict"
+            })
+            return res.status(200).json({
+                message: "Tạo Access Token mới thành công",
+                accessToken: newAccessToken
+            })
+        })
+    } catch (error) {
+        return res.status(400).json({
+            message: error.message
+        })
+    }
+
+}

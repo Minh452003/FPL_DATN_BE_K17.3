@@ -14,12 +14,15 @@ import routerOrder from "./routers/order.js";
 import cartRouter from "./routers/cart.js";
 import routerCoupons from "./routers/coupons.js";
 import routerUser from "./routers/user.js";
+import cookieParser from "cookie-parser";
 
 
 dotenv.config();
 
 const app = express();
 app.use(express.json());
+app.use(cookieParser())
+
 app.use(cors());
 app.use("/api", routerProducts);
 app.use("/api", routerCategory);
