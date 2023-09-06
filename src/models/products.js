@@ -37,6 +37,6 @@ const productsSchema = mongoose.Schema({
 },
     { timestamps: true, versionKey: false });
 productsSchema.plugin(mongoosePaginate);
-productsSchema.plugin(mongooseDelete, { overrideMethods: 'all',deletedAt : true  });
+productsSchema.plugin(mongooseDelete, { overrideMethods: "all", deletedAt: true });
 
 export default mongoose.model("Product", productsSchema);
