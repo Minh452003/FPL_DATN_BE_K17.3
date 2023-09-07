@@ -28,7 +28,7 @@ export const getAll = async (req, res) => {
 
 export const getAllDelete = async (req, res) => {
     try {
-        const product = await Product.findDeleted({ deleted: true });
+        const product = await Product.findWithDeleted({ deleted: true });
 
         return res.status(200).json({
             message: "Lấy tất cả sản phẩm đã bị xóa",

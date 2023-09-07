@@ -38,8 +38,7 @@ export const getAllCategory = async (req, res) => {
 
 export const getAllDelete = async (req, res) => {
   try {
-    const category = await Category.findDeleted({ deleted: true });
-
+    const category = await Category.findWithDeleted({ deleted: true });
     return res.status(200).json({
       message: "Lấy tất cả danh mục đã bị xóa",
       category
