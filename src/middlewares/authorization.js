@@ -1,6 +1,6 @@
 export const authorization = async (req, res, next) => {
     try {
-        const user= req.user
+        const user = req.user
         if (user.role !== "admin") {
             return res.status(203).json({
                 message: "Bạn không có quyền truy cập tài nguyên!"

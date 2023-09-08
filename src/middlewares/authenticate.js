@@ -8,7 +8,6 @@ export const authenticate = async (req, res, next) => {
                 message: "Bạn chưa đăng nhập !",
             });
         }
-
         const token = req.headers.authorization.split(" ")[1];
         const { id } = jwt.verify(token, "DATN");
         const user = await User.findById(id);
@@ -19,9 +18,28 @@ export const authenticate = async (req, res, next) => {
         }
         req.user = user
         next();
+
+
     } catch (error) {
         return res.status(400).json({
             message: error.message
         })
     }
 }
+
+
+
+// const token = req.headers.authorization
+// if (token) {
+//     const accessToken = await token.split(" ")[1];
+//     jwt.verify(accessToken, process.env.JWT_ACCESS_KEY, (err, user) => {
+//         if (err) {
+//             return res.status(403).json({
+//                 message: "Token không hợp lệ"
+//             })
+//         }
+//         req.user = user
+//         next();
+//     }
+//     )
+// }
