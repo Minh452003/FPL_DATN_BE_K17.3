@@ -12,11 +12,6 @@ const CommentSchema = mongoose.Schema({
     ref: "Product",
     required: true
   },
-  statusId:{
-    type : mongoose.Types.ObjectId,
-    ref:"Status",
-    required:true
-  },
   description: {
     type: String,
     required: true

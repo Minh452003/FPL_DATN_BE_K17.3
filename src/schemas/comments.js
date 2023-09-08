@@ -7,9 +7,6 @@ export const CommentSchema = Joi.object({
     productId: Joi.string().required().messages({
         'any.required': 'productId không được để trống.',
     }),
-    statusId:Joi.string().required().messages({
-        'any.required': 'StatusId không được để trống.',
-    }),
     description: Joi.string().required().messages({
         'any.required': 'description không được để trống.',
     }),

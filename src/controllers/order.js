@@ -6,7 +6,7 @@ import Coupon from "../models/coupons.js"
 export const getOrderByUserId = async (req, res) => {
     try {
         const id = req.params.userId
-        const order = await Order.find({ id }).populate('products.productId status');
+        const order = await Order.find({ userId:id }).populate('products.productId status');
         return res.status(200).json({
             message: "Lấy thông tin người dùng đặt hàng thành công",
             order
@@ -67,7 +67,6 @@ export const removeOrder = async (req, res) => {
         }
         return res.status(200).json({
             message: "Xóa đơn hàng thành công!",
-
         })
     } catch (error) {
         return res.status(400).json({

@@ -7,7 +7,7 @@ const routerOrder = express.Router();
 routerOrder.post("/order", createOrder);
 routerOrder.get("/order/:id", getOrderById)
 routerOrder.delete("/order/:id", removeOrder);
-routerOrder.get("/order/:id/user", getOrderByUserId);
+routerOrder.get("/order/:userId/user", getOrderByUserId);
 routerOrder.get("/order", getAllOrder)
 routerOrder.patch("/order/:id", updateOrder);
 
