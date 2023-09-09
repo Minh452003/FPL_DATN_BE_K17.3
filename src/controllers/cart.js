@@ -279,7 +279,7 @@ export const applyCoupon = async (req, res) => {
 
         // Kiểm tra xem phiếu giảm giá có quá hạn không
         const currentDate = new Date();
-        if (currentDate > coupon.expiryDate) {
+        if (currentDate > coupon.expiration_date) {
             return res.status(400).json({ message: 'Mã phiếu giảm giá đã hết hạn' });
         }
 

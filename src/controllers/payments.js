@@ -1,5 +1,6 @@
 import crypto from 'crypto';
 import { request } from 'https';
+import paypal from 'paypal-rest-sdk'
 
 export const PayMomo = (req, res) => {
     const accessKey = 'F8BBA842ECF85';
@@ -89,3 +90,100 @@ export const PayMomo = (req, res) => {
     momoRequest.write(requestBody);
     momoRequest.end();
 };
+
+// 
+paypal.configure({
+    'mode': 'sandbox', //sandbox or live
+    'client_id': 'AQyc1P8zTxcYbL9RgIIeJDyrClQl8pCATFKLf9o-BW5FqkisSdtBMlblVOg611WhgQg429hx6JUnjdeE',
+    'client_secret': 'ENYh-J6nt272nE7bQ_nWtAUijIwvlt0Yf9IYU2-Y6vDBT6lZYYw6-xNMSqt9vISwLlPC6vHs-_T6s3dx'
+});
+
+export const PayPal = (req, res) => {
+    const { products } = req.body
+    const exchangeRate = 1 / 24057
+    const transformedProducts = products.map(product => {
+        return {
+            sku: product.productId,
+            name: product.product_name,
+            quantity: product.stock_quantity,
+            description: product.image,
+            price: (product.product_price * exchangeRate).toFixed(2),
+            currency: 'USD',
+        };
+    });
+    const totalMoney = transformedProducts.reduce((acc, product) => {
+        return acc + (product.price * product.quantity);
+    }, 0);
+    const create_payment_json = {
+        intent: 'sale',
+        payer: {
+            payment_method: 'paypal',
+        },
+        redirect_urls: {
+            return_url: `http://localhost:8088/api/success`,
+            cancel_url: `http://localhost:5000/cancel`,
+        },
+        transactions: [
+            {
+                item_list: {
+                    items: transformedProducts,
+                },
+                amount: {
+                    currency: 'USD',
+                    total: totalMoney.toString(),
+                },
+                description: 'Hat for the best team ever',
+            },
+        ],
+    };
+    paypal.payment.create(create_payment_json, function (error, payment) {
+        if (error) {
+            res.status(400).json(error)
+        } else {
+            for (let i = 0; i < payment.links.length; i++) {
+                if (payment.links[i].rel === 'approval_url') {
+                    // Trả về đường link dưới dạng JSON response
+                    res.json({ approval_url: payment.links[i].href });
+                    return; // Dừng hàm và kết thúc response
+                }
+            }
+        }
+    });
+}
+
+
+export const PayPalSuccess = (req, res) => {
+    const payerId = req.query.PayerID;
+    const paymentId = req.query.paymentId;
+
+    const execute_payment_json = {
+        "payer_id": payerId,
+    };
+
+    paypal.payment.execute(paymentId, execute_payment_json, function (error, payment) {
+        if (error) {
+            console.log(error.response);
+            // Xử lý lỗi ở đây nếu cần
+        } else {
+            // Truy cập thông tin giao dịch từ đối tượng payment
+            const paidAmount = Math.floor(parseFloat(payment.transactions[0].amount.total * 24057));
+            const productList = payment.transactions[0].item_list.items.map(item => ({
+                product_name: item.name,
+                stock_quantity: item.quantity,
+                product_price: Math.floor(parseFloat(item.price * 24057)),
+                productId: item.sku || "",
+                image: item.description
+            }));
+
+            // Bây giờ bạn có thể sử dụng danh sách sản phẩm productList trong mã của bạn
+
+            // In danh sách sản phẩm ra console
+            console.log(productList);
+            console.log('Số tiền đã thanh toán: ' + paidAmount);
+
+            // Gửi phản hồi về trình duyệt của người dùng
+            res.send('Success (Mua hàng thành công)');
+        }
+    });
+}
+
