@@ -2,7 +2,6 @@ import express from "express";
 import mongoose from "mongoose";
 import cors from "cors";
 import dotenv from "dotenv";
-import routerLogout from './routers/logout.js';
 import routerProducts from "./routers/products.js";
 import routerBrands from "./routers/brands.js";
 import routerStatus from "./routers/status.js";
@@ -15,12 +14,15 @@ import cartRouter from "./routers/cart.js";
 import routerCoupons from "./routers/coupons.js";
 import routerUser from "./routers/user.js";
 import routerPayment from "./routers/payments.js";
-
+import cookieParser from "cookie-parser";
 
 dotenv.config();
 
 const app = express();
 app.use(express.json());
+app.use(cookieParser())
+app.use(cors());
+
 app.use(cors());
 app.use("/api", routerProducts);
 app.use("/api", routerCategory);
@@ -32,7 +34,6 @@ app.use("/api", routerOrder);
 app.use("/api", routerCoupons)
 app.use("/api", uploadRouter);
 app.use("/api", cartRouter);
-app.use("/api", routerLogout);
 app.use("/api", routerUser);
 app.use("/api", routerPayment);
 
