@@ -1,14 +1,16 @@
 import crypto from 'crypto';
 import { request } from 'https';
 import paypal from 'paypal-rest-sdk'
+import Order from "../models/orders.js"
+import Coupon from "../models/coupons.js"
 
 export const PayMomo = (req, res) => {
     const accessKey = 'F8BBA842ECF85';
     const secretKey = 'K951B6PE1waDMi640xX08PD3vg6EkVlz';
     const orderInfo = 'THANH TOÁN MOMO';
     const partnerCode = 'MOMO';
-    const redirectUrl = 'http://localhost:5173/thanks';
-    const ipnUrl = 'http://localhost:8088/api/thanks';
+    const redirectUrl = 'http://localhost:8088/api/momo';
+    const ipnUrl = 'http://localhost:8088/api/momo';
     const requestType = "payWithMethod";
     const amount = req.body.total;
     const orderId = partnerCode + new Date().getTime();
@@ -26,7 +28,6 @@ export const PayMomo = (req, res) => {
     const lang = 'vi';
     // Create raw signature
     const rawSignature = `accessKey=${accessKey}&amount=${amount}&extraData=${extraData}&ipnUrl=${ipnUrl}&orderId=${orderId}&orderInfo=${orderInfo}&partnerCode=${partnerCode}&redirectUrl=${redirectUrl}&requestId=${requestId}&requestType=${requestType}`;
-    console.log(rawSignature);
     // Generate signature
     const signature = crypto.createHmac('sha256', secretKey)
         .update(rawSignature)
@@ -91,6 +92,70 @@ export const PayMomo = (req, res) => {
     momoRequest.end();
 };
 
+export const MomoSuccess = async (req, res) => {
+    const body = req.query;
+    const total = body.amount
+    const paymentId = body.orderId;
+    const paymentCode = body.requestId;
+    const payerId = body.orderInfo
+    // Tạo một đối tượng để lưu trữ các giá trị
+    const data = {};
+
+    // Tách chuỗi thành các cặp key-value dựa trên dấu "&"
+    const keyValuePairs = body.extraData.split('&');
+
+    // Lặp qua từng cặp key-value
+    keyValuePairs.forEach((keyValue) => {
+        // Tách mỗi cặp thành key và value dựa trên dấu "="
+        const [key, value] = keyValue.split('=');
+
+        // Kiểm tra nếu giá trị là một chuỗi JSON
+        if (key === 'products') {
+            // Sử dụng JSON.parse() để chuyển thành đối tượng JavaScript
+            data[key] = JSON.parse(decodeURIComponent(value));
+        } else {
+            // Lưu trữ các giá trị khác
+            data[key] = decodeURIComponent(value);
+        }
+    });
+
+    // Bây giờ bạn có thể truy cập các giá trị từ đối tượng data
+    const userId = data.userId;
+    const couponId = data.couponId;
+    const phone = data.phone;
+    const address = data.address;
+    const products = data.products;
+
+
+
+    // Xử lý dữ liệu theo cách bạn muốn ở đây
+    const formattedData = {
+        userId,
+        couponId,
+        products: products,
+        total: Number(total),
+        phone,
+        address,
+        paymentId,
+        paymentCode,
+        payerId
+    };
+    // Kiểm tra xem có phiếu giảm giá được sử dụng trong đơn hàng không
+    if (formattedData.couponId !== null) {
+        // Tăng số lượng phiếu giảm giá đã sử dụng lên 1
+        const coupon = await Coupon.findById(formattedData.couponId);
+        if (coupon) {
+            coupon.coupon_quantity -= 1;
+            await coupon.save();
+        }
+    }
+    await Order.create(formattedData);
+
+    res.redirect('http://localhost:5173/order');
+}
+
+
+
 // 
 paypal.configure({
     'mode': 'sandbox', //sandbox or live
@@ -99,7 +164,7 @@ paypal.configure({
 });
 
 export const PayPal = (req, res) => {
-    const { products } = req.body
+    const { products, userId, couponId, phone, address } = req.body
     const exchangeRate = 1 / 24057
     const transformedProducts = products.map(product => {
         return {
@@ -121,7 +186,7 @@ export const PayPal = (req, res) => {
         },
         redirect_urls: {
             return_url: `http://localhost:8088/api/success`,
-            cancel_url: `http://localhost:5000/cancel`,
+            cancel_url: `http://localhost:5173/carts`,
         },
         transactions: [
             {
@@ -133,6 +198,12 @@ export const PayPal = (req, res) => {
                     total: totalMoney.toString(),
                 },
                 description: 'Hat for the best team ever',
+                custom: JSON.stringify({
+                    phone: phone,
+                    address: address,
+                    userId: userId,
+                    couponId: couponId
+                }),
             },
         ],
     };
@@ -155,12 +226,12 @@ export const PayPal = (req, res) => {
 export const PayPalSuccess = (req, res) => {
     const payerId = req.query.PayerID;
     const paymentId = req.query.paymentId;
-
+    const token = req.query.token;
     const execute_payment_json = {
         "payer_id": payerId,
     };
-
-    paypal.payment.execute(paymentId, execute_payment_json, function (error, payment) {
+    console.log(req.query);
+    paypal.payment.execute(paymentId, execute_payment_json, async (error, payment) => {
         if (error) {
             console.log(error.response);
             // Xử lý lỗi ở đây nếu cần
@@ -171,19 +242,38 @@ export const PayPalSuccess = (req, res) => {
                 product_name: item.name,
                 stock_quantity: item.quantity,
                 product_price: Math.floor(parseFloat(item.price * 24057)),
-                productId: item.sku || "",
+                productId: item.sku,
                 image: item.description
             }));
-
             // Bây giờ bạn có thể sử dụng danh sách sản phẩm productList trong mã của bạn
-
-            // In danh sách sản phẩm ra console
-            console.log(productList);
-            console.log('Số tiền đã thanh toán: ' + paidAmount);
-
-            // Gửi phản hồi về trình duyệt của người dùng
-            res.send('Success (Mua hàng thành công)');
+            const customData = JSON.parse(payment.transactions[0].custom);
+            const phone = customData.phone;
+            const address = customData.address;
+            const userId = customData.userId;
+            const couponId = customData.couponId
+            // Tạo đối tượng có định dạng bạn mong muốn
+            const formattedData = {
+                products: productList,
+                total: paidAmount,
+                phone,
+                address,
+                userId,
+                couponId,
+                paymentId,
+                paymentCode: token,
+                payerId
+            };
+            // Kiểm tra xem có phiếu giảm giá được sử dụng trong đơn hàng không
+            if (formattedData.couponId !== null) {
+                // Tăng số lượng phiếu giảm giá đã sử dụng lên 1
+                const coupon = await Coupon.findById(formattedData.couponId);
+                if (coupon) {
+                    coupon.coupon_quantity -= 1;
+                    await coupon.save();
+                }
+            }
+            await Order.create(formattedData);
+            res.redirect('http://localhost:5173/order'); // Thay đổi '/other-page' thành URL của trang khác
         }
     });
 }
-

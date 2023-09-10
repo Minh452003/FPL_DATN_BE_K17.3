@@ -39,6 +39,15 @@ const orderSchema = mongoose.Schema({
   },
   notes: {
     type: String
+  },
+  paymentId: {
+    type: String
+  },
+  paymentCode: {
+    type: String
+  },
+  payerId: {
+    type: String
   }
 },
   { timestamps: true, versionKey: false });
