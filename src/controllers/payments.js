@@ -1,4 +1,4 @@
-import crypto from 'crypto';
+const { createHmac } = await import('node:crypto');
 import { request } from 'https';
 import paypal from 'paypal-rest-sdk'
 import Order from "../models/orders.js"
@@ -29,7 +29,7 @@ export const PayMomo = (req, res) => {
     // Create raw signature
     const rawSignature = `accessKey=${accessKey}&amount=${amount}&extraData=${extraData}&ipnUrl=${ipnUrl}&orderId=${orderId}&orderInfo=${orderInfo}&partnerCode=${partnerCode}&redirectUrl=${redirectUrl}&requestId=${requestId}&requestType=${requestType}`;
     // Generate signature
-    const signature = crypto.createHmac('sha256', secretKey)
+    const signature = createHmac('sha256', secretKey)
         .update(rawSignature)
         .digest('hex');
 
