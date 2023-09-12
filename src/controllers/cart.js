@@ -33,9 +33,18 @@ const addProduct = async (cartExist, productAdd, res) => {
         // Kiểm tra xem phiếu giảm giá đã được áp dụng
         if (cartExist.couponId !== null) {
             // Tính lại tổng tiền bằng cách cộng với giá của sản phẩm mới
-            cartExist.total = cartExist.originalTotal + (productAdd.stock_quantity * productAdd.product_price);
+            cartExist.products = cartExist.products.map((item) => {
+                return {
+                    ...item,
+                    product_price: item.originalPrice, // Khôi phục giá của sản phẩm về giá ban đầu
+                };
+            });
+            cartExist.total = cartExist.products.reduce((total, item) => total + item.product_price * item.stock_quantity, 0);
             cartExist.couponId = null
-            cartExist.originalTotal = 0
+            // Xóa giá ban đầu của sản phẩm
+            cartExist.products.forEach((item) => {
+                item.originalPrice = undefined
+            });
         }
         // Lưu giỏ hàng sau khi cập nhật (không có phiếu giảm giá)
         const cartUpdated = await Cart.findOneAndUpdate({ _id: cartExist._id }, cartExist, { new: true })
@@ -206,7 +215,6 @@ export const clearUserCart = async (req, res) => {
 
         cartExist.products = []; // Xoá tất cả sản phẩm trong giỏ hàng
         cartExist.total = 0;// Đặt tổng giá trị về 0
-        cartExist.originalTotal = 0
         cartExist.couponId = null
         const cartUpdated = await Cart.findOneAndUpdate({ _id: cartExist._id }, cartExist, { new: true });
 
@@ -226,15 +234,24 @@ const applyCouponToCart = async (userId, couponId) => {
         const cart = await Cart.findOne({ userId });
         const coupon = await Coupon.findById(couponId);
         if (coupon.discount_amount) {
-            // Lưu trữ giá trị ban đầu của total
-            cart.originalTotal = cart.total;
-
-            // Tính toán giảm giá dựa trên phần trăm và tổng giỏ hàng
-            const discountAmount = (coupon.discount_amount / 100) * cart.total;
-
+            // Lưu trữ giá ban đầu của từng sản phẩm trong giỏ hàng
+            cart.products = cart.products.map((item) => {
+                return {
+                    ...item,
+                    originalPrice: item.product_price, // Lưu giá ban đầu của sản phẩm
+                };
+            });
+            cart.products = cart.products.map((item) => {
+                const originalItemPrice = item.product_price;
+                const discountAmount = (coupon.discount_amount / 100) * originalItemPrice;
+                const discountedPrice = originalItemPrice - discountAmount;
+                return {
+                    ...item,
+                    product_price: discountedPrice,
+                };
+            });
             // Cập nhật giỏ hàng với giảm giá
-            cart.total -= discountAmount;
-
+            cart.total = cart.products.reduce((total, item) => total + item.product_price * item.stock_quantity, 0);
             // Đánh dấu giỏ hàng đã áp dụng mã phiếu giảm giá
             cart.couponId = coupon._id;
 
@@ -301,11 +318,24 @@ const removeCouponFromCart = async (userId) => {
         const cart = await Cart.findOne({ userId });
         // Kiểm tra xem có mã phiếu giảm giá đã được áp dụng không
         if (cart.couponId) {
-            // Khôi phục total từ originalTotal
-            cart.total = cart.originalTotal;
+            // Khôi phục giá của từng sản phẩm từ giá ban đầu
+            cart.products = cart.products.map((item) => {
+                return {
+                    ...item,
+                    product_price: item.originalPrice, // Khôi phục giá của sản phẩm về giá ban đầu
+                };
+            });
+
             // Đặt couponId về null để đánh dấu là không sử dụng mã phiếu giảm giá
             cart.couponId = null;
-            cart.originalTotal = 0;
+
+            // Tính toán lại tổng giá trị của giỏ hàng sau khi khôi phục giá sản phẩm
+            cart.total = cart.products.reduce((total, item) => total + item.product_price * item.stock_quantity, 0);
+
+            // Xóa giá ban đầu của sản phẩm
+            cart.products.forEach((item) => {
+                item.originalPrice = undefined
+            });
             // Lưu giỏ hàng sau khi cập nhật
             const updatedCart = await cart.save();
 
@@ -317,6 +347,7 @@ const removeCouponFromCart = async (userId) => {
         throw error;
     }
 };
+
 
 // Sử dụng hàm removeCouponFromCart trong route handler để huỷ bỏ sử dụng mã phiếu giảm giá
 export const removeCoupon = async (req, res) => {
