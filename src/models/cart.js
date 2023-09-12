@@ -19,15 +19,12 @@ const cartSchema = mongoose.Schema(
         product_price: Number,
         image: String,
         stock_quantity: Number,
+        originalPrice: Number
       },
     ],
     total: {
       type: Number,
-    },
-    originalTotal: {
-      type: Number,
-      default: 0,
-    },
+    }
   },
   { timestamps: true, versionKey: false }
 );
