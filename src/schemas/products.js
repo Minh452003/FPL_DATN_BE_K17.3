@@ -14,7 +14,7 @@ export const ProductSchema = Joi.object({
     image: Joi.object().required().messages({
         "any.required": "Trường ảnh sản phẩm bắt buộc nhập"
     }),
-    view: Joi.number(),
+    sold_quantity: Joi.number(),
     description: Joi.string(),
     stock_quantity: Joi.number().required().messages({
         "number.empty": "Số lượng tồn kho bắt buộc nhập",
