@@ -4,6 +4,7 @@ import mongoose from 'mongoose'
 import { cartSchema } from '../schemas/cart.js';
 import Coupon from "../models/coupons.js"
 import Order from "../models/orders.js"
+import Product from "../models/products.js";
 
 
 export const resetCart = async (idUser) => {
@@ -30,6 +31,14 @@ const addProduct = async (cartExist, productAdd, res) => {
             cartExist.products.push(productAdd);
             cartExist.total += productAdd.stock_quantity * productAdd.product_price;
         }
+        for (const item of cartExist.products) {
+            const product = await Product.findById(item.productId);
+
+            if (!product || product.stock_quantity < item.stock_quantity) {
+                return res.status(400).json({ message: `Đã quá số hàng tồn` });
+            }
+        }
+
         // Kiểm tra xem phiếu giảm giá đã được áp dụng
         if (cartExist.couponId !== null) {
             // Tính lại tổng tiền bằng cách cộng với giá của sản phẩm mới

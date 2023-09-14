@@ -1,12 +1,13 @@
 import Order from "../models/orders.js"
 import { orderSchema } from "../schemas/order.js";
 import Coupon from "../models/coupons.js"
+import Product from "../models/products.js";
 
 
 export const getOrderByUserId = async (req, res) => {
     try {
         const id = req.params.userId
-        const order = await Order.find({ userId:id }).populate('products.productId status');
+        const order = await Order.find({ userId: id }).populate('products.productId status');
         return res.status(200).json({
             message: "Lấy thông tin người dùng đặt hàng thành công",
             order
@@ -59,12 +60,25 @@ export const getAllOrder = async (req, res) => {
 
 export const removeOrder = async (req, res) => {
     try {
-        const order = await Order.findByIdAndDelete(req.params.id);
+        // Tìm đơn hàng để lấy thông tin sản phẩm đã mua
+        const order = await Order.findById(req.params.id);
         if (!order) {
             return res.status(404).json({
                 message: "Đơn hàng không tồn tại"
-            })
+            });
         }
+        // Lặp qua từng sản phẩm trong đơn hàng và cập nhật lại số lượng sản phẩm và view
+        for (const item of order.products) {
+            const product = await Product.findById(item.productId);
+            if (product) {
+                // Tăng số lượng sản phẩm lên theo số lượng đã hủy
+                product.stock_quantity += item.stock_quantity;
+                // Giảm số lượng đã bán (view) đi theo số lượng đã hủy
+                product.sold_quantity -= item.stock_quantity;
+                await product.save();
+            }
+        }
+        await Order.findByIdAndDelete(req.params.id);
         return res.status(200).json({
             message: "Xóa đơn hàng thành công!",
         })
@@ -100,6 +114,18 @@ export const createOrder = async (req, res) => {
             }
         }
 
+        // Lặp qua từng sản phẩm trong đơn hàng và cập nhật số lượng và view
+        for (const item of body.products) {
+            const product = await Product.findById(item.productId);
+            if (product) {
+                // Giảm số lượng sản phẩm tương ứng với số lượng mua
+                product.stock_quantity -= item.stock_quantity; // Giảm số lượng theo số lượng trong giỏ hàng
+                // Tăng số lượng đã bán (view) tương ứng với số lượng mua
+                product.sold_quantity += item.stock_quantity; // Tăng view theo số lượng trong giỏ hàng
+                await product.save();
+            }
+        }
+
         const order = await Order.create(body);
         if (!order) {
             return res.status(404).json({
@@ -117,6 +143,7 @@ export const createOrder = async (req, res) => {
         });
     }
 }
+
 
 
 export const updateOrder = async (req, res) => {

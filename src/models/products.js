@@ -14,7 +14,7 @@ const productsSchema = mongoose.Schema({
         type: Object,
         required: true
     },
-    view: {
+    sold_quantity: {
         type: Number,
         default: 0
     },
