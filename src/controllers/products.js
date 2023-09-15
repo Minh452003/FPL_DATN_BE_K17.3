@@ -1,6 +1,7 @@
 import Product from "../models/products.js";
 import Category from "../models/category.js";
 import { ProductSchema } from "../schemas/products.js";
+import Color from "../models/colors.js";
 
 export const getAll = async (req, res) => {
     const { _limit = 10, _sort = "createAt", _order = "asc", _page = 1, q } = req.query;
@@ -186,3 +187,42 @@ export const updateProduct = async (req, res) => {
         })
     }
 }
+// 
+export const updateProductPrice = async (req, res) => {
+    try {
+        const id = req.params.id;
+        const selectedColor = req.body.colorId; // Màu đã chọn từ phía frontend
+        const product = await Product.findById(id);
+        if (!product) {
+            return res.status(404).json({
+                message: "Không tìm thấy sản phẩm!",
+            });
+        }
+
+        // Tìm giá của màu đã chọn trong bảng colors
+        const color = await Color.findById(selectedColor);
+        if (!color) {
+            return res.status(400).json({
+                message: "Màu không hợp lệ!",
+            });
+        }
+
+        // Lấy giá sản phẩm hiện tại từ trường product_price
+        const currentProductPrice = product.product_price;
+
+        // Cập nhật giá sản phẩm dựa trên giá của màu đã chọn
+        const updatedProductPrice = currentProductPrice + color.colors_price;
+        product.colorId = selectedColor;
+        product.product_price = updatedProductPrice;
+        await product.save();
+
+        return res.status(200).json({
+            message: "Cập nhật giá sản phẩm thành công",
+            product
+        });
+    } catch (error) {
+        return res.status(400).json({
+            message: error.message,
+        });
+    }
+};

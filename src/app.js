@@ -15,6 +15,7 @@ import routerCoupons from "./routers/coupons.js";
 import routerUser from "./routers/user.js";
 import routerPayment from "./routers/payments.js";
 import cookieParser from "cookie-parser";
+import routerColor from "./routers/colors.js";
 
 dotenv.config();
 
@@ -36,6 +37,7 @@ app.use("/api", uploadRouter);
 app.use("/api", cartRouter);
 app.use("/api", routerUser);
 app.use("/api", routerPayment);
+app.use("/api", routerColor);
 
 app.listen(8088, async () => {
     await mongoose.connect(process.env.URL_MONGO, { useNewUrlParser: true, useUnifiedTopology: true });

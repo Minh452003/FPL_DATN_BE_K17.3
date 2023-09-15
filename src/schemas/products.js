@@ -31,4 +31,5 @@ export const ProductSchema = Joi.object({
         "any.required": "Trường Thương hiệu bắt buộc nhập",
         "string.base": "Thương hiệu phải là sản phẩm"
     }),
+    colorId: Joi.string()
 })
