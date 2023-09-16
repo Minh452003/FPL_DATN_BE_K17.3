@@ -27,19 +27,3 @@ export const authenticate = async (req, res, next) => {
     }
 }
 
-
-
-// const token = req.headers.authorization
-// if (token) {
-//     const accessToken = await token.split(" ")[1];
-//     jwt.verify(accessToken, process.env.JWT_ACCESS_KEY, (err, user) => {
-//         if (err) {
-//             return res.status(403).json({
-//                 message: "Token không hợp lệ"
-//             })
-//         }
-//         req.user = user
-//         next();
-//     }
-//     )
-// }
