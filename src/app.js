@@ -15,8 +15,8 @@ import routerCoupons from "./routers/coupons.js";
 import routerUser from "./routers/user.js";
 import routerPayment from "./routers/payments.js";
 import cookieParser from "cookie-parser";
+import routerColor from "./routers/colors.js";
 import routerSize from "./routers/size.js";
-
 dotenv.config();
 
 const app = express();
@@ -37,6 +37,7 @@ app.use("/api", uploadRouter);
 app.use("/api", cartRouter);
 app.use("/api", routerUser);
 app.use("/api", routerPayment);
+app.use("/api", routerColor);
 app.use("/api", routerSize);
 
 app.listen(8088, async () => {
