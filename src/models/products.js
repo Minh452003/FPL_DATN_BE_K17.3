@@ -33,11 +33,6 @@ const productsSchema = mongoose.Schema({
     brandId: {
         type: mongoose.Types.ObjectId,
         ref: "Brand",
-    },
-    colorId: {
-        type: mongoose.Types.ObjectId,
-        ref: "Color",
-        default: '6503c545f699739f256cebcf'
     }
 },
     { timestamps: true, versionKey: false });
