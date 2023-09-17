@@ -1,7 +1,6 @@
-import user from "../models/user.js";
 import bcrypt from "bcryptjs";
 import User from "../models/user.js";
-import { signinSchema, signupSchema } from "../schemas/auth.js";
+import { signinSchema, signupSchema, updateUserSchema } from "../schemas/auth.js";
 import jwt from "jsonwebtoken";
 import nodemailer from "nodemailer"
 
@@ -10,7 +9,7 @@ let refreshTokens = [];
 // Lấy tất cả user
 export const getAll = async (req, res) => {
     try {
-        const data = await user.find();
+        const data = await User.find();
         return res.status(200).json({
             message: "Lấy tất cả người dùng thành công",
             data
@@ -26,7 +25,7 @@ export const getAll = async (req, res) => {
 export const getOneById = async (req, res) => {
     try {
         const id = req.params.id;
-        const data = await user.findById(id);
+        const data = await User.findById(id);
         if (data.length === 0) {
             return res.status(404).json({
                 message: "Lấy thông tin 1 người dùng thất bại",
@@ -46,11 +45,11 @@ export const getOneById = async (req, res) => {
 };
 
 
-// Xóa user
+// Xóa user by Admin
 export const remove = async (req, res) => {
     try {
         const id = req.params.id;
-        const data = await user.findByIdAndDelete(id);
+        const data = await User.findByIdAndDelete(id);
         return res.status(200).json({
             message: "Xóa thông tin người dùng thành công",
             data
@@ -61,6 +60,39 @@ export const remove = async (req, res) => {
         })
     }
 };
+
+
+// Update user (Người dùng có thể tự cập nhật thông tin của chính mình)
+export const updateUser = async (req, res) => {
+    try {
+        const id = req.user
+        const body = req.body;
+        const { error } = updateUserSchema.validate(req.body, { abortEarly: false });
+        if (error) {
+            const errors = error.details.map((err) => err.message);
+            return res.status(400).json({
+                message: errors,
+            });
+        }
+        const user = await User.findByIdAndUpdate(id, body, { new: true }).select('-password -role -refreshToken -passwordChangeAt -__v')
+        if (!user) {
+            return res.status(400).json({
+                message: " Cập nhật thông tin người dùng thất bại"
+            })
+        }
+        return res.status(200).json({
+            message: "Cập nhật thông tin người dùng thành công!",
+            user
+        })
+
+    } catch (error) {
+        return res.status(400).json({
+            message: error.message
+        })
+    }
+}
+
+
 
 // Đăng kí
 export const signup = async (req, res) => {
