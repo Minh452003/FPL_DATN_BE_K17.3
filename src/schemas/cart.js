@@ -19,5 +19,12 @@ export const cartSchema = Joi.object({
   originalPrice: Joi.number().messages({
     'number.base': 'originalPrice phải là một số.',
   }),
-  couponId: Joi.string(),
+  sizeId: Joi.string().required().messages({
+    'any.required': 'Size không được để trống.',
+    'string.base': 'Size phải là một chuỗi.',
+  }),
+  colorId: Joi.string().required().messages({
+    'any.required': 'Color không được để trống.',
+    'string.base': 'Color phải là một chuỗi.',
+  }),
 });
