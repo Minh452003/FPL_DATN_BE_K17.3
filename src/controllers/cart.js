@@ -5,6 +5,7 @@ import { cartSchema } from '../schemas/cart.js';
 import Coupon from "../models/coupons.js"
 import Order from "../models/orders.js"
 import Product from "../models/products.js";
+import Size from "../models/size.js";
 
 
 export const resetCart = async (idUser) => {
@@ -23,13 +24,33 @@ export const resetCart = async (idUser) => {
 
 const addProduct = async (cartExist, productAdd, res) => {
     try {
-        const productExist = cartExist.products.find((product) => product.productId === productAdd.productId);
+        const productExist = cartExist.products.find((product) =>
+            product.productId === productAdd.productId &&
+            product.sizeId === productAdd.sizeId &&
+            product.colorId === productAdd.colorId
+        );
+
+        console.log(productExist);
         if (productExist) {
+            const size = await Size.findById(productAdd.sizeId);
+            const updatedProductPrice = productAdd.product_price + size.size_price;
             productExist.stock_quantity += productAdd.stock_quantity;
-            cartExist.total += productAdd.stock_quantity * productAdd.product_price;
+            productExist.product_price = updatedProductPrice; // Cập nhật giá sản phẩm
+
+            cartExist.total += productAdd.stock_quantity * updatedProductPrice;
         } else {
-            cartExist.products.push(productAdd);
-            cartExist.total += productAdd.stock_quantity * productAdd.product_price;
+            const size = await Size.findById(productAdd.sizeId)
+            const newProduct = {
+                productId: productAdd.productId,
+                product_name: productAdd.product_name,
+                product_price: productAdd.product_price + size.size_price,
+                image: productAdd.image,
+                stock_quantity: productAdd.stock_quantity,
+                sizeId: productAdd.sizeId,
+                colorId: productAdd.colorId
+            }
+            cartExist.products.push(newProduct);
+            cartExist.total += productAdd.stock_quantity * newProduct.product_price;
         }
         for (const item of cartExist.products) {
             const product = await Product.findById(item.productId);
