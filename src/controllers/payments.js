@@ -92,6 +92,8 @@ export const PayMomo = (req, res) => {
     momoRequest.end();
 };
 
+
+
 export const MomoSuccess = async (req, res) => {
     const body = req.query;
     const total = body.amount
@@ -167,9 +169,10 @@ export const PayPal = (req, res) => {
     const { products, userId, couponId, phone, address } = req.body
     const exchangeRate = 1 / 24057
     const transformedProducts = products.map(product => {
+        const productN = `Name=${product.product_name}&&Color=${product.colorId}&&Size=${product.sizeId}`;
         return {
             sku: product.productId,
-            name: product.product_name,
+            name: productN,
             quantity: product.stock_quantity,
             description: product.image,
             price: (product.product_price * exchangeRate).toFixed(2),
@@ -230,7 +233,6 @@ export const PayPalSuccess = (req, res) => {
     const execute_payment_json = {
         "payer_id": payerId,
     };
-    console.log(req.query);
     paypal.payment.execute(paymentId, execute_payment_json, async (error, payment) => {
         if (error) {
             console.log(error.response);
@@ -238,13 +240,38 @@ export const PayPalSuccess = (req, res) => {
         } else {
             // Truy cập thông tin giao dịch từ đối tượng payment
             const paidAmount = Math.floor(parseFloat(payment.transactions[0].amount.total * 24057));
-            const productList = payment.transactions[0].item_list.items.map(item => ({
-                product_name: item.name,
-                stock_quantity: item.quantity,
-                product_price: Math.floor(parseFloat(item.price * 24057)),
-                productId: item.sku,
-                image: item.description
-            }));
+            const productList = payment.transactions[0].item_list.items.map(item => {
+                const productInfo = item.name.split('&&'); // Tách thông tin theo dấu &&
+
+                // Khởi tạo các biến để lưu thông tin
+                let name = '';
+                let color = '';
+                let size = '';
+
+                // Lặp qua từng phần tử trong productInfo
+                productInfo.forEach(info => {
+                    // Kiểm tra nếu thông tin chứa "Name=", "Color=", hoặc "Size="
+                    if (info.includes('Name=')) {
+                        name = info.replace('Name=', ''); // Lấy tên sản phẩm sau "Name="
+                    }
+                    if (info.includes('Color=')) {
+                        color = info.replace('Color=', ''); // Lấy màu sắc sau "Color="
+                    }
+                    if (info.includes('Size=')) {
+                        size = info.replace('Size=', ''); // Lấy kích thước sau "Size="
+                    }
+                });
+
+                return {
+                    product_name: name,
+                    stock_quantity: item.quantity,
+                    product_price: Math.floor(parseFloat(item.price * 24057)),
+                    productId: item.sku,
+                    image: item.description,
+                    colorId: color, // Lưu thông tin color
+                    sizeId: size, // Lưu thông tin size
+                };
+            });
             // Bây giờ bạn có thể sử dụng danh sách sản phẩm productList trong mã của bạn
             const customData = JSON.parse(payment.transactions[0].custom);
             const phone = customData.phone;
@@ -267,9 +294,12 @@ export const PayPalSuccess = (req, res) => {
             if (formattedData.couponId !== null) {
                 // Tăng số lượng phiếu giảm giá đã sử dụng lên 1
                 const coupon = await Coupon.findById(formattedData.couponId);
-                if (coupon) {
+                if (coupon && coupon.coupon_quantity > 0) {
                     coupon.coupon_quantity -= 1;
                     await coupon.save();
+                } else {
+                    res.send("Đã hết phiếu giảm giá");
+                    return
                 }
             }
             await Order.create(formattedData);
