@@ -18,6 +18,8 @@ const orderSchema = mongoose.Schema({
       product_price: Number,
       image: String,
       stock_quantity: Number,
+      sizeId: String,
+      colorId: String
     }
   ],
   total: {
