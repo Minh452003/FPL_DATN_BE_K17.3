@@ -46,13 +46,29 @@ export const getOneById = async (req, res) => {
 
 
 // Xóa user by Admin
-export const remove = async (req, res) => {
+export const removebyAdmin = async (req, res) => {
     try {
         const id = req.params.id;
-        const data = await User.findByIdAndDelete(id);
+        const user = await User.findByIdAndDelete(id);
         return res.status(200).json({
-            message: "Xóa thông tin người dùng thành công",
-            data
+            message: "Admin xóa thông tin người dùng thành công",
+            user
+        })
+    } catch (error) {
+        return res.status(400).json({
+            message: error.message,
+        })
+    }
+};
+
+// Xóa user ( Người dùng có thể tự xóa thông tin của chính mình)
+export const removebyUser = async (req, res) => {
+    try {
+        const id = req.params.id;
+        const user = await User.findByIdAndDelete(id);
+        return res.status(200).json({
+            message: "Tự xóa chính mình thành công",
+            user
         })
     } catch (error) {
         return res.status(400).json({
