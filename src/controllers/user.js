@@ -1,4 +1,4 @@
-import User from "../models/user.js";
+import Auth from "../models/auth.js";
 import crypto from "crypto-js";
 import nodemailer from 'nodemailer';
 import bcrypt from 'bcryptjs';
@@ -14,7 +14,7 @@ export const forgotPassword = async (req, res) => {
                 message: "Không có email!"
             })
         }
-        const user = await User.findOne({ email: email })
+        const user = await Auth.findOne({ email: email })
         if (!user) {
             return res.status(404).json({
                 message: "Không tìm thấy người dùng"
@@ -64,7 +64,7 @@ export const forgotPassword = async (req, res) => {
 export const resetPassword = async (req, res) => {
     try {
         const hashedToken = crypto.SHA256(req.params.token, 'DATN').toString();
-        const user = await User.findOne({
+        const user = await Auth.findOne({
             passwordResetToken: hashedToken,
             passwordResetExpires: { $gt: Date.now() }
         })
@@ -106,7 +106,7 @@ export const changePassword = async (req, res) => {
             })
         }
         const hashedPassword = await bcrypt.hash(req.body.password, 10);
-        const userNew = await User.findByIdAndUpdate(req.user._id, { password: hashedPassword }, { new: true });
+        const userNew = await Auth.findByIdAndUpdate(req.user._id, { password: hashedPassword }, { new: true });
         if (!userNew) {
             return res.status(400).json({
                 message: "Không tìm thấy người dùng"

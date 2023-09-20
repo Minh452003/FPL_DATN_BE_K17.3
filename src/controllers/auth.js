@@ -1,5 +1,5 @@
 import bcrypt from "bcryptjs";
-import User from "../models/user.js";
+import Auth from "../models/auth.js";
 import { signinSchema, signupSchema, updateUserSchema } from "../schemas/auth.js";
 import jwt from "jsonwebtoken";
 import nodemailer from "nodemailer"
@@ -9,7 +9,7 @@ let refreshTokens = [];
 // Lấy tất cả user
 export const getAll = async (req, res) => {
     try {
-        const data = await User.find();
+        const data = await Auth.find();
         return res.status(200).json({
             message: "Lấy tất cả người dùng thành công",
             data
@@ -25,7 +25,7 @@ export const getAll = async (req, res) => {
 export const getOneById = async (req, res) => {
     try {
         const id = req.params.id;
-        const data = await User.findById(id);
+        const data = await Auth.findById(id);
         if (data.length === 0) {
             return res.status(404).json({
                 message: "Lấy thông tin 1 người dùng thất bại",
@@ -49,7 +49,7 @@ export const getOneById = async (req, res) => {
 export const removebyAdmin = async (req, res) => {
     try {
         const id = req.params.id;
-        const user = await User.findByIdAndDelete(id);
+        const user = await Auth.findByIdAndDelete(id);
         return res.status(200).json({
             message: "Admin xóa thông tin người dùng thành công",
             user
@@ -65,7 +65,7 @@ export const removebyAdmin = async (req, res) => {
 export const removebyUser = async (req, res) => {
     try {
         const id = req.params.id;
-        const user = await User.findByIdAndDelete(id);
+        const user = await Auth.findByIdAndDelete(id);
         return res.status(200).json({
             message: "Tự xóa chính mình thành công",
             user
@@ -90,7 +90,7 @@ export const updateUser = async (req, res) => {
                 message: errors,
             });
         }
-        const user = await User.findByIdAndUpdate(id, body, { new: true }).select('-password -role -refreshToken -passwordChangeAt -__v')
+        const user = await Auth.findByIdAndUpdate(id, body, { new: true }).select('-password -role -refreshToken -passwordChangeAt -__v')
         if (!user) {
             return res.status(400).json({
                 message: " Cập nhật thông tin người dùng thất bại"
@@ -121,7 +121,7 @@ export const signup = async (req, res) => {
                 message: errors,
             });
         }
-        const userExist = await User.findOne({ email });
+        const userExist = await Auth.findOne({ email });
         if (userExist) {
             return res.status(400).json({
                 messsage: "Email đã tồn tại",
@@ -130,7 +130,7 @@ export const signup = async (req, res) => {
 
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        const user = await User.create({
+        const user = await Auth.create({
             first_name,
             last_name,
             phone,
@@ -210,7 +210,7 @@ export const signin = async (req, res) => {
             });
         }
 
-        const user = await User.findOne({ email });
+        const user = await Auth.findOne({ email });
         if (!user) {
             return res.status(404).json({
                 message: "Tài khoản không tồn tại",
@@ -260,7 +260,7 @@ export const logout = async (req, res) => {
             })
         }
         // Xóa refresh Token ở DB
-        await User.findOneAndUpdate({ refreshToken: cookie.refreshToken }, { refreshToken: '' }, { new: true })
+        await Auth.findOneAndUpdate({ refreshToken: cookie.refreshToken }, { refreshToken: '' }, { new: true })
         // Xóa refresh Token ở cookie trình duyệt
         res.clearCookie("refreshToken", {
             httpOnly: true,

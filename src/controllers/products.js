@@ -1,7 +1,6 @@
 import Product from "../models/products.js";
 import Category from "../models/category.js";
 import { ProductSchema } from "../schemas/products.js";
-import Color from "../models/colors.js";
 
 export const getAll = async (req, res) => {
     const { _limit = 10, _sort = "createAt", _order = "asc", _page = 1, q } = req.query;

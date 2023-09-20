@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import User from "../models/user.js";
+import Auth from "../models/auth.js";
 
 export const authenticate = async (req, res, next) => {
     try {
@@ -10,13 +10,13 @@ export const authenticate = async (req, res, next) => {
         }
         const token = req.headers.authorization.split(" ")[1];
         const { id } = jwt.verify(token, "DATN");
-        const user = await User.findById(id);
-        if (!user) {
+        const auth = await Auth.findById(id);
+        if (!auth) {
             return res.status(203).json({
                 message: "Không tìm thấy người dùng"
             })
         }
-        req.user = user
+        req.user = auth
         next();
 
 

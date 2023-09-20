@@ -1,6 +1,6 @@
 import { Strategy as GoogleStrategy } from 'passport-google-oauth2';
 import passport from 'passport';
-import User from "../models/user.js";
+import Auth from "../models/auth.js";
 import jwt from 'jsonwebtoken';
 
 passport.use(new GoogleStrategy({
@@ -10,7 +10,7 @@ passport.use(new GoogleStrategy({
     passReqToCallback: true
 },
     async (request, accessToken, refreshToken, profile, done) => {
-        const isExitUser = await User.findOne({
+        const isExitUser = await Auth.findOne({
             googleId: profile.id,
             authType: "google"
         })
@@ -20,7 +20,7 @@ passport.use(new GoogleStrategy({
 
         }
 
-        const newUser = new User({
+        const newUser = new Auth({
             authType: 'google',
             googleId: profile.id,
             first_name: profile.name.familyName,

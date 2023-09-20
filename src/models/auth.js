@@ -1,7 +1,7 @@
 import { format } from "date-fns";
 import mongoose from "mongoose";
 
-const userSchema = new mongoose.Schema({
+const authSchema = new mongoose.Schema({
     first_name: {
         type: String,
         required: true,
@@ -61,7 +61,7 @@ const userSchema = new mongoose.Schema({
         default: Date.now
     }
 });
-userSchema.virtual("formattedCreatedAt").get(function () {
+authSchema.virtual("formattedCreatedAt").get(function () {
     return format(this.createdAt, "HH:mm a dd/MM/yyyy");
 });
-export default mongoose.model("User", userSchema);
+export default mongoose.model("Auth", authSchema);
