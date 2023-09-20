@@ -17,14 +17,27 @@ import routerPayment from "./routers/payments.js";
 import cookieParser from "cookie-parser";
 import routerColor from "./routers/colors.js";
 import routerSize from "./routers/size.js";
-dotenv.config();
+import routerPassport from "./routers/passport.js";
+import session from 'express-session'
+import passport from "passport";
 
+dotenv.config();
 const app = express();
 app.use(express.json());
-app.use(cookieParser())
+app.use(cookieParser());
 app.use(cors());
+app.use(session({
+    secret: 'DATN',
+    resave: false,
+    saveUninitialized: true,
+    cookie: {
+        secure: false,
+        maxAge: 30 * 60 * 1000 // Thời gian hết hạn cho phiên (30 phút)
+    }
+}))
+app.use(passport.initialize());
+app.use(passport.session());
 
-app.use(cors());
 app.use("/api", routerProducts);
 app.use("/api", routerCategory);
 app.use("/api", routerBrands);
@@ -39,6 +52,7 @@ app.use("/api", routerUser);
 app.use("/api", routerPayment);
 app.use("/api", routerColor);
 app.use("/api", routerSize);
+app.use("/api", routerPassport);
 
 app.listen(8088, async () => {
     await mongoose.connect(process.env.URL_MONGO, { useNewUrlParser: true, useUnifiedTopology: true });
