@@ -1,7 +1,7 @@
 import Comment from "../models/comments.js";
 import { CommentSchema } from "../schemas/comments.js";
 import Product from "../models/products.js";
-import User from "../models/user.js";
+import Auth from "../models/auth.js";
 
 export const getCommentFromProduct = async (req, res) => {
     try {
@@ -81,7 +81,7 @@ export const create = async (req, res) => {
              });
         }
           // Check if the user exists
-        const user = await User.findById(userId);
+        const user = await Auth.findById(userId);
 
           if (!user) {
           return res.status(404).json({

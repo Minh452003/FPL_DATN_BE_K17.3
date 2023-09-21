@@ -4,7 +4,7 @@ import { format } from "date-fns";
 const CommentSchema = mongoose.Schema({
   userId: {
     type: mongoose.Types.ObjectId,
-    ref: "User",
+    ref: "Auth",
     required: true
   },
   productId: {

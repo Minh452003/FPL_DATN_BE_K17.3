@@ -1,5 +1,5 @@
 import Cart from '../models/cart.js'
-import User from "../models/user.js";
+import Auth from "../models/auth.js";
 import mongoose from 'mongoose'
 import { cartSchema } from '../schemas/cart.js';
 import Coupon from "../models/coupons.js"
@@ -96,7 +96,7 @@ export const create = async (req, res) => {
     try {
         const userId = req.params.id
         const productNeedToAdd = req.body
-        const userExist = await User.findById(userId)
+        const userExist = await Auth.findById(userId)
         if (!userExist) {
             return res.status(404).json({
                 message: 'Người dùng không tồn tại !'
@@ -166,7 +166,7 @@ export const changeQuantity = async (req, res) => {
         const idUser = req.params.id
         const { idProduct = '' } = req.query
         const { stock_quantity } = req.body
-        const userExist = await User.findOne({ _id: idUser })
+        const userExist = await Auth.findOne({ _id: idUser })
         if (!userExist) {
             return res.status(404).json({
                 message: 'Vui lòng đăng nhập!'
@@ -207,7 +207,7 @@ export const removeProduct = async (req, res) => {
     try {
         const idUser = req.params.id
         const { idProduct = '' } = req.query
-        const userExist = await User.findOne({ _id: idUser })
+        const userExist = await Auth.findOne({ _id: idUser })
         if (!userExist) {
             return res.status(404).json({
                 message: 'Vui lòng đăng nhập!'

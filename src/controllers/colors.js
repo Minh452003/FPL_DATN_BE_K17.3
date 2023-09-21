@@ -73,12 +73,15 @@ export const updateColor = async (req, res) => {
             message: error.message
         })
     }
-}
+};
+
+
 export const removeColor = async (req, res) => {
     try {
-        await Color.findByIdAndDelete(req.params.id);
+        const color = await Color.findByIdAndDelete(req.params.id);
         return res.status(200).json({
-            message: 'Xóa thương hiệu thành công',
+            message: 'Xóa màu thành công',
+            color
         });
     } catch (error) {
         return res.status(400).json({
@@ -86,6 +89,8 @@ export const removeColor = async (req, res) => {
         });
     }
 };
+
+
 export const getColor = async (req, res) => {
     try {
         const id = req.params.id;

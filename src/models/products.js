@@ -33,10 +33,6 @@ const productsSchema = mongoose.Schema({
     brandId: {
         type: mongoose.Types.ObjectId,
         ref: "Brand",
-    },
-    sizeId: {
-        type: mongoose.Types.ObjectId,
-        ref: "Size",
     }
 },
     { timestamps: true, versionKey: false });

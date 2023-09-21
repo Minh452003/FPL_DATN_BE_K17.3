@@ -4,7 +4,7 @@ const cartSchema = mongoose.Schema(
   {
     userId: {
       type: mongoose.Types.ObjectId,
-      ref: "User",
+      ref: "Auth",
       required: true,
     },
     couponId: {

@@ -36,6 +36,8 @@ export const deleteImage = async (req, res) => {
         res.status(500).json({ error: error.message || "Error deleting image" });
     }
 };
+
+
 export const updateImage = async (req, res) => {
     const files = req.files
     if (!Array.isArray(files) || files.length === 0) {
