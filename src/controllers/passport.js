@@ -1,4 +1,6 @@
 import { Strategy as GoogleStrategy } from 'passport-google-oauth2';
+import { Strategy as FacebookStrategy } from 'passport-facebook';
+
 import passport from 'passport';
 import Auth from "../models/auth.js";
 import jwt from 'jsonwebtoken';
@@ -59,4 +61,43 @@ export const LogoutGoogle = (req, res) => {
         }
         res.redirect(process.env.CLIENT_URL);
     });
+}
+// 
+passport.use(new FacebookStrategy({
+    clientID: "338129605620771",
+    clientSecret: "c18cc1dee641226dd7938c2fd52fa5a7",
+    callbackURL: "http://localhost:8088/api/auth/facebook/callback",
+    profileFields: ['id', 'name', , 'profileUrl', 'photos', 'email']
+},
+    async (accessToken, refreshToken, profile, cb) => {
+        const isExitUser = await User.findOne({
+            facebookId: profile.id,
+            authType: "facebook"
+        })
+        if (isExitUser) {
+            const token = jwt.sign({ id: isExitUser._id }, "DATN", { expiresIn: "2h" });
+            return cb(null, { user: isExitUser, accessToken: token });
+        }
+        const newUser = new User({
+            authType: 'facebook',
+            facebookId: profile.id,
+            first_name: profile.name.familyName,
+            last_name: profile.name.givenName,
+            email: profile.emails[0].value,
+            avatar: {
+                url: profile.photos[0].value,
+                publicId: null
+            },
+            password: "Không có mật khẩu",
+            phone: "Chưa có số điện thoại",
+            address: "Chưa có địa chỉ"
+        })
+        await newUser.save();
+        const token = jwt.sign({ id: newUser._id }, "DATN", { expiresIn: "2h" });
+        cb(null, { user: newUser, accessToken: token });
+    }
+));
+export const LoginWithFacebook = (req, res) => {
+    const { accessToken } = req.user;
+    res.redirect(`http://localhost:5173/success/?token=${accessToken}`);
 }
