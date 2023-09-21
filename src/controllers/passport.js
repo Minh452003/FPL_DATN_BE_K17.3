@@ -64,13 +64,13 @@ export const LogoutGoogle = (req, res) => {
 }
 // 
 passport.use(new FacebookStrategy({
-    clientID: "338129605620771",
-    clientSecret: "c18cc1dee641226dd7938c2fd52fa5a7",
+    clientID: "347641427607083",
+    clientSecret: "09b41757bd4e273afc6dec54b34a433c",
     callbackURL: "http://localhost:8088/api/auth/facebook/callback",
     profileFields: ['id', 'name', , 'profileUrl', 'photos', 'email']
 },
     async (accessToken, refreshToken, profile, cb) => {
-        const isExitUser = await User.findOne({
+        const isExitUser = await Auth.findOne({
             facebookId: profile.id,
             authType: "facebook"
         })
@@ -78,7 +78,7 @@ passport.use(new FacebookStrategy({
             const token = jwt.sign({ id: isExitUser._id }, "DATN", { expiresIn: "2h" });
             return cb(null, { user: isExitUser, accessToken: token });
         }
-        const newUser = new User({
+        const newUser = new Auth({
             authType: 'facebook',
             facebookId: profile.id,
             first_name: profile.name.familyName,
