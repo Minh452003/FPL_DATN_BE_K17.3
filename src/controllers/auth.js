@@ -81,9 +81,9 @@ export const removebyUser = async (req, res) => {
 // Update user (Người dùng có thể tự cập nhật thông tin của chính mình)
 export const updateUser = async (req, res) => {
     try {
-        const id = req.user
+        const id = req.params.id
         const body = req.body;
-        const { error } = updateUserSchema.validate(req.body, { abortEarly: false });
+        const { error } = updateUserSchema.validate(body, { abortEarly: false });
         if (error) {
             const errors = error.details.map((err) => err.message);
             return res.status(400).json({
@@ -93,11 +93,11 @@ export const updateUser = async (req, res) => {
         const user = await Auth.findByIdAndUpdate(id, body, { new: true }).select('-password -role -refreshToken -passwordChangeAt -__v')
         if (!user) {
             return res.status(400).json({
-                message: " Cập nhật thông tin người dùng thất bại"
+                message: "Cập nhật thông tin người dùng thất bại"
             })
         }
         return res.status(200).json({
-            message: "Cập nhật thông tin người dùng thành công!",
+            message: "Tự cập nhật thông tin người dùng thành công!",
             user
         })
 
@@ -106,8 +106,37 @@ export const updateUser = async (req, res) => {
             message: error.message
         })
     }
-}
+};
 
+
+// Update user by Admin (Admin có thể cập nhật thông tin người dùng)
+export const updateUserByAdmin = async (req, res) => {
+    try {
+        const id = req.params.id
+        const body = req.body;
+        const { error } = updateUserSchema.validate(body, { abortEarly: false })
+        if (error) {
+            const errors = error.details.map((err) => err.message)
+            return res.status(400).json({
+                message: errors
+            })
+        }
+        const user = await Auth.findByIdAndUpdate(id, body, { new: true }).select('-password -role -refreshToken -passwordChangeAt -__v')
+        if (!user) {
+            return res.status(404).json({
+                message: "Admin cập nhật thông tin người dùng tất cả"
+            })
+        }
+        return res.status(200).json({
+            message: "Admin cập nhật thông tin người dùng thành công",
+            user
+        })
+    } catch (error) {
+        return res.status(400).json({
+            message: error.message
+        })
+    }
+};
 
 
 // Đăng kí

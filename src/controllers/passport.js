@@ -67,7 +67,7 @@ passport.use(new FacebookStrategy({
     clientID: "347641427607083",
     clientSecret: "09b41757bd4e273afc6dec54b34a433c",
     callbackURL: "http://localhost:8088/api/auth/facebook/callback",
-    profileFields: ['id', 'name', , 'profileUrl', 'photos', 'email']
+    profileFields: ['id', 'name', 'profileUrl', 'photos', 'email']
 },
     async (accessToken, refreshToken, profile, cb) => {
         const isExitUser = await Auth.findOne({
