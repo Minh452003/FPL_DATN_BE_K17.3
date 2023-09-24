@@ -1,17 +1,17 @@
-import Color from "../models/colors.js";
-import { colorSchema } from "../schemas/colors.js";
+import Material from "../models/materials.js";
+import { materialSchema } from "../schemas/materials.js";
 
-export const getColorList = async (req, res) => {
+export const getMaterialList = async (req, res) => {
     try {
-        const color = await Color.find();
-        if (color.length === 0) {
+        const material = await Material.find();
+        if (material.length === 0) {
             return res.status(404).json({
-                message: 'Lấy tất cả màu thất bại',
+                message: 'Lấy tất cả chất liệu thất bại',
             });
         }
         return res.status(200).json({
             message: " Lấy tất cả màu thành công",
-            color
+            material
         });
     } catch (error) {
         return res.status(400).json({
@@ -21,23 +21,23 @@ export const getColorList = async (req, res) => {
 };
 
 
-export const createColor = async (req, res) => {
+export const createMaterial = async (req, res) => {
     try {
-        const { error } = colorSchema.validate(req.body);
+        const { error } = materialSchema.validate(req.body);
         if (error) {
             return res.status(400).json({
                 message: error.details.map((err) => err.message),
             });
         }
-        const color = await Color.create(req.body);
-        if (!color) {
+        const material = await Material.create(req.body);
+        if (!material) {
             return res.status(400).json({
-                message: 'Thêm màu thất bại',
+                message: 'Thêm chất liệu thất bại',
             });
         }
         return res.status(200).json({
-            message: 'Thêm màu thành công',
-            color,
+            message: 'Thêm chất liệu thành công',
+            material,
         });
     } catch (error) {
         return res.status(400).json({
@@ -47,26 +47,26 @@ export const createColor = async (req, res) => {
 };
 
 
-export const updateColor = async (req, res) => {
+export const updateMaterial = async (req, res) => {
     try {
         const id = req.params.id;
         const body = req.body;
-        const { error } = colorSchema.validate(body, { abortEarly: false });
+        const { error } = materialSchema.validate(body, { abortEarly: false });
         if (error) {
             const errors = error.details.map((err) => err.message)
             return res.status(400).json({
                 message: errors
             })
         }
-        const color = await Color.findByIdAndUpdate(id, body, { new: true, });
-        if (!color) {
+        const material = await Material.findByIdAndUpdate(id, body, { new: true, });
+        if (!material) {
             return res.status(404).json({
-                message: 'Cập nhật màu thất bại',
+                message: 'Cập nhật chất liệu thất bại',
             });
         }
         return res.status(200).json({
-            message: "Cập nhật màu thành công",
-            color
+            message: "Cập nhật chất liệu thành công",
+            material
         })
     } catch (error) {
         return res.status(400).json({
@@ -76,12 +76,12 @@ export const updateColor = async (req, res) => {
 };
 
 
-export const removeColor = async (req, res) => {
+export const removeMaterial = async (req, res) => {
     try {
-        const color = await Color.findByIdAndDelete(req.params.id);
+        const material = await Material.findByIdAndDelete(req.params.id);
         return res.status(200).json({
-            message: 'Xóa màu thành công',
-            color
+            message: 'Xóa chất liệu thành công',
+            material
         });
     } catch (error) {
         return res.status(400).json({
@@ -91,18 +91,18 @@ export const removeColor = async (req, res) => {
 };
 
 
-export const getColor = async (req, res) => {
+export const getMaterial = async (req, res) => {
     try {
         const id = req.params.id;
-        const color = await Color.findById(id);
-        if (color.length === 0) {
+        const material = await Material.findById(id);
+        if (material.length === 0) {
             return res.status(400).json({
-                message: "Không có màu!",
+                message: "Không có chất liệu!",
             })
         }
         return res.status(200).json({
-            message: "Lấy 1 màu thành công",
-            color
+            message: "Lấy 1 chất liệu thành công",
+            material
         });
     } catch (error) {
         return res.status(400).json({

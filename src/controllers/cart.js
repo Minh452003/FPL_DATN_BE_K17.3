@@ -29,8 +29,6 @@ const addProduct = async (cartExist, productAdd, res) => {
             product.sizeId === productAdd.sizeId &&
             product.colorId === productAdd.colorId
         );
-
-        console.log(productExist);
         if (productExist) {
             const size = await Size.findById(productAdd.sizeId);
             const updatedProductPrice = productAdd.product_price + size.size_price;
@@ -96,11 +94,15 @@ export const create = async (req, res) => {
     try {
         const userId = req.params.id
         const productNeedToAdd = req.body
-        const userExist = await Auth.findById(userId)
+        const userExist = await Auth.findById(userId);
+        const product = await Product.findById(productNeedToAdd.productId);
         if (!userExist) {
             return res.status(404).json({
                 message: 'Người dùng không tồn tại !'
             })
+        }
+        if (!product || product.stock_quantity < productNeedToAdd.stock_quantity) {
+            return res.status(400).json({ message: `Đã quá số hàng tồn` });
         }
         const { error } = cartSchema.validate(req.body, { abortEarly: false });
         if (error) {
