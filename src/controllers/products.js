@@ -85,7 +85,7 @@ export const remove = async (req, res) => {
     try {
         const id = req.params.id;
         const product = await Product.findById(id);
-        console.log(product);
+        // console.log(product);
         if (product) {
             await product.delete()
         }
