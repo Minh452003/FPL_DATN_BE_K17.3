@@ -196,6 +196,24 @@ export const removeCommentByUser = async (req, res) => {
 };
 
 
+// Remove comment by admin 
+export const removeCommentByAdmin = async (req, res) => {
+    try {
+        const id = req.params.id
+        const comment = await Comment.findByIdAndDelete(id);
+
+        return res.status(200).json({
+            message: 'Admin xóa bình luận thành công!',
+            comment
+        });
+    } catch (error) {
+        res.status(400).json({
+            message: error.message,
+        });
+    }
+};
+
+
 
 export const getAllComment = async (req, res) => {
     try {
