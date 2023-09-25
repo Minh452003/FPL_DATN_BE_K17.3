@@ -55,7 +55,8 @@ export const getOneComment = async (req, res) => {
             message: error.message,
         });
     }
-}
+};
+
 
 export const create = async (req, res) => {
     try {
@@ -69,69 +70,69 @@ export const create = async (req, res) => {
         }
         if (!userId) {
             return res.status(401).json({
-              message: "Bạn phải đang nhập mới được đánh giá sản phẩm!",
+                message: "Bạn phải đang nhập mới được đánh giá sản phẩm!",
             });
         }
-         // Check if the product exists
+        // Check if the product exists
         const product = await Product.findById(productId);
 
         if (!product) {
-             return res.status(404).json({
+            return res.status(404).json({
                 message: "Sản phẩm không tồn tại.",
-             });
+            });
         }
-          // Check if the user exists
+        // Check if the user exists
         const user = await Auth.findById(userId);
 
-          if (!user) {
-          return res.status(404).json({
-          message: "Người dùng không tồn tại.",
-          });
+        if (!user) {
+            return res.status(404).json({
+                message: "Người dùng không tồn tại.",
+            });
         }
 
-          // Check if the user already reviewed the product
-    const existingComment = await Comment.findOne({ userId, productId });
+        // Check if the user already reviewed the product
+        const existingComment = await Comment.findOne({ userId, productId });
 
         if (existingComment) {
-          return res.status(401).json({
-          message: "Bạn đã đánh giá sản phẩm này trước đó.",
-         });
+            return res.status(401).json({
+                message: "Bạn đã đánh giá sản phẩm này trước đó.",
+            });
         }
         const user_fullName = user?.user_fullName;
         const user_avatar = user?.user_avatar;
         const comment = await Comment.create({
-        user_fullName,
-        user_avatar,
-        userId,
-        rating,
-        description,
-        productId,
-    });
-       const comments = await Comment.find({ productId });
+            user_fullName,
+            user_avatar,
+            userId,
+            rating,
+            description,
+            productId,
+        });
+        const comments = await Comment.find({ productId });
         const totalRating = comments.reduce(
-         (totalRating, rating) => totalRating + rating.rating,
-        0
-      );
-     // Tính toán số lượng sao và lươtj đánh giá
+            (totalRating, rating) => totalRating + rating.rating,
+            0
+        );
+        // Tính toán số lượng sao và lươtj đánh giá
         const reviewCount = comments.length;
-         const averageScore = totalRating / reviewCount;
- 
-         product.average_score = Math.round(averageScore);
-         product.review_count = reviewCount;
+        const averageScore = totalRating / reviewCount;
+
+        product.average_score = Math.round(averageScore);
+        product.review_count = reviewCount;
         await product.save();
-     if (user) {
-       return res.status(200).json({
-         message: "Bạn đã đánh giá thành công sản phẩm này!",
-         success: true,
-         comment,
-       });
-     }
+        if (user) {
+            return res.status(200).json({
+                message: "Bạn đã đánh giá thành công sản phẩm này!",
+                success: true,
+                comment,
+            });
+        }
     } catch (error) {
         return res.status(400).json({
             message: error,
         });
     }
-}
+};
 
 
 export const updateComment = async (req, res) => {
@@ -156,26 +157,47 @@ export const updateComment = async (req, res) => {
             message: error,
         });
     }
-}
+};
 
 
-export const removeComment = async (req, res) => {
-    const { id } = req.params;
+// Remove comment by user ( Người dùng có thể tự xóa comment của chính mình )
+export const removeCommentByUser = async (req, res) => {
     try {
-        const comment = await Comment.findByIdAndDelete(id);
-        return res.status(200).json({
-            message: 'Xóa comment thành công',
-            comment
-        });
+        const id = req.params.id;
+        const { userId = '' } = req.query;
+        const findCommentById = await Comment.findById(id);
+
+        // Kiểm tra nếu không tìm thấy bình luận
+        if (!findCommentById) {
+            return res.status(404).json({
+                message: "Không tìm thấy bình luận"
+            });
+        }
+
+        // console.log(userId);
+        // console.log(findCommentById.userId);
+        if (findCommentById.userId == userId) {
+            // Xóa bình luận
+            const comment = await Comment.findByIdAndDelete(id);
+            return res.status(200).json({
+                message: "Xóa bình luận thành công"
+            });
+        } else {
+            // Trả về mã lỗi 403 nếu người dùng không có quyền xóa bình luận này
+            return res.status(403).json({
+                message: "Bạn không có quyền xóa bình luận này"
+            });
+        }
     } catch (error) {
-        res.status(400).json({
+        return res.status(400).json({
             message: error.message,
         });
     }
-}
+};
 
 
-export const getAll = async (req, res) => {
+
+export const getAllComment = async (req, res) => {
     try {
         const comments = await Comment.find().populate({
             path: 'productId',

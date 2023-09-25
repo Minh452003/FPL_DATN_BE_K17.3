@@ -40,6 +40,7 @@ export const getBrand = async (req, res) => {
     });
   }
 };
+
 export const createBrand = async (req, res) => {
   try {
     const { brand_name } = req.body;
