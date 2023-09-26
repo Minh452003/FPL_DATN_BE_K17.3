@@ -6,6 +6,7 @@ import Coupon from "../models/coupons.js"
 import Order from "../models/orders.js"
 import Product from "../models/products.js";
 import Size from "../models/size.js";
+import CustomizedProduct from "../models/customizedProducts.js";
 
 
 export const resetCart = async (idUser) => {
@@ -27,14 +28,14 @@ const addProduct = async (cartExist, productAdd, res) => {
         const productExist = cartExist.products.find((product) =>
             product.productId === productAdd.productId &&
             product.sizeId === productAdd.sizeId &&
-            product.colorId === productAdd.colorId
+            product.colorId === productAdd.colorId &&
+            product.materialId === productAdd.materialId
         );
         if (productExist) {
             const size = await Size.findById(productAdd.sizeId);
             const updatedProductPrice = productAdd.product_price + size.size_price;
             productExist.stock_quantity += productAdd.stock_quantity;
             productExist.product_price = updatedProductPrice; // Cập nhật giá sản phẩm
-
             cartExist.total += productAdd.stock_quantity * updatedProductPrice;
         } else {
             const size = await Size.findById(productAdd.sizeId)
@@ -45,16 +46,23 @@ const addProduct = async (cartExist, productAdd, res) => {
                 image: productAdd.image,
                 stock_quantity: productAdd.stock_quantity,
                 sizeId: productAdd.sizeId,
-                colorId: productAdd.colorId
+                colorId: productAdd.colorId,
+                materialId: productAdd.materialId
             }
             cartExist.products.push(newProduct);
             cartExist.total += productAdd.stock_quantity * newProduct.product_price;
         }
         for (const item of cartExist.products) {
-            const product = await Product.findById(item.productId);
-
-            if (!product || product.stock_quantity < item.stock_quantity) {
-                return res.status(400).json({ message: `Đã quá số hàng tồn` });
+            const customProduct = await CustomizedProduct.findById(item.productId);
+            if (!customProduct) {
+                const product = await Product.findById(item.productId);
+                if (!product || product.stock_quantity < item.stock_quantity) {
+                    return res.status(400).json({ message: `Đã quá số hàng tồn` });
+                }
+            } else {
+                if (!customProduct || customProduct.stock_quantity < item.stock_quantity) {
+                    return res.status(400).json({ message: `Đã đạt số lượng mua tối đa` });
+                }
             }
         }
 
@@ -96,13 +104,20 @@ export const create = async (req, res) => {
         const productNeedToAdd = req.body
         const userExist = await Auth.findById(userId);
         const product = await Product.findById(productNeedToAdd.productId);
+        const customProduct = await CustomizedProduct.findById(productNeedToAdd.productId);
         if (!userExist) {
             return res.status(404).json({
                 message: 'Người dùng không tồn tại !'
             })
         }
-        if (!product || product.stock_quantity < productNeedToAdd.stock_quantity) {
-            return res.status(400).json({ message: `Đã quá số hàng tồn` });
+        if (!customProduct) {
+            if (!product || product.stock_quantity < productNeedToAdd.stock_quantity) {
+                return res.status(400).json({ message: `Đã quá số hàng tồn` });
+            }
+        } else {
+            if (!customProduct || customProduct.stock_quantity < productNeedToAdd.stock_quantity) {
+                return res.status(400).json({ message: `Đã đạt số lượng mua tối đa` });
+            }
         }
         const { error } = cartSchema.validate(req.body, { abortEarly: false });
         if (error) {

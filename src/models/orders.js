@@ -19,7 +19,8 @@ const orderSchema = mongoose.Schema({
       image: String,
       stock_quantity: Number,
       sizeId: String,
-      colorId: String
+      colorId: String,
+      materialId: String
     }
   ],
   total: {

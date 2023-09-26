@@ -27,4 +27,8 @@ export const cartSchema = Joi.object({
     'any.required': 'Color không được để trống.',
     'string.base': 'Color phải là một chuỗi.',
   }),
+  materialId: Joi.string().required().messages({
+    'any.required': 'Material không được để trống.',
+    'string.base': 'Material phải là một chuỗi.',
+  }),
 });

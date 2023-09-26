@@ -114,7 +114,7 @@ export const createOrder = async (req, res) => {
             }
         }
 
-        // Lặp qua từng sản phẩm trong đơn hàng và cập nhật số lượng và view
+        // Lặp qua từng sản phẩm trong đơn hàng và cập nhật số lượng và số lượng sản phẩm đã bán
         for (const item of body.products) {
             const product = await Product.findById(item.productId);
             if (product) {

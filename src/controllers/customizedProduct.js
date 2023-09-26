@@ -1,10 +1,12 @@
 import CustomizedProduct from "../models/customizedProducts.js";
 import { CustomizedProductSchema } from "../schemas/CustomizedProduct.js";
+import Category from "../models/category.js";
 
 // Controller để tạo sản phẩm tự thiết kế
 export const createCustomizedProduct = async (req, res) => {
     try {
         const body = req.body;
+        const category = await Category.findById(body.categoryId)
         const { error } = CustomizedProductSchema.validate(body, { abortEarly: false });
         if (error) {
             const errors = error.details.map((err) => err.message);
@@ -12,6 +14,8 @@ export const createCustomizedProduct = async (req, res) => {
                 message: errors
             })
         }
+        const newProductPrice = body.product_price * (1 + category.price_increase_percent / 100);
+        body.product_price = newProductPrice
         const customizedProduct = await CustomizedProduct.create(body);
         if (customizedProduct.length === 0) {
             return res.status(400).json({
