@@ -169,12 +169,13 @@ export const PayPal = (req, res) => {
     const { products, userId, couponId, phone, address } = req.body
     const exchangeRate = 1 / 24057
     const transformedProducts = products.map(product => {
-        const productN = `Name=${product.product_name}&&Color=${product.colorId}&&Size=${product.sizeId}`;
+        const classOption = `Color=${product.colorId}&&Size=${product.sizeId}&&Material=${product.materialId}`;
         return {
             sku: product.productId,
-            name: productN,
+            name: product.product_name,
             quantity: product.stock_quantity,
-            description: product.image,
+            image_url: product.image,
+            description: classOption,
             price: (product.product_price * exchangeRate).toFixed(2),
             currency: 'USD',
         };
@@ -241,35 +242,34 @@ export const PayPalSuccess = (req, res) => {
             // Truy cập thông tin giao dịch từ đối tượng payment
             const paidAmount = Math.floor(parseFloat(payment.transactions[0].amount.total * 24057));
             const productList = payment.transactions[0].item_list.items.map(item => {
-                const productInfo = item.name.split('&&'); // Tách thông tin theo dấu &&
+                const classOption = item.description.split('&&'); // Tách thông tin theo dấu &&
 
                 // Khởi tạo các biến để lưu thông tin
-                let name = '';
                 let color = '';
                 let size = '';
-
+                let material = '';
                 // Lặp qua từng phần tử trong productInfo
-                productInfo.forEach(info => {
-                    // Kiểm tra nếu thông tin chứa "Name=", "Color=", hoặc "Size="
-                    if (info.includes('Name=')) {
-                        name = info.replace('Name=', ''); // Lấy tên sản phẩm sau "Name="
-                    }
+                classOption.forEach(info => {
                     if (info.includes('Color=')) {
                         color = info.replace('Color=', ''); // Lấy màu sắc sau "Color="
                     }
                     if (info.includes('Size=')) {
                         size = info.replace('Size=', ''); // Lấy kích thước sau "Size="
                     }
+                    if (info.includes('Material=')) {
+                        material = info.replace('Material=', ''); // Lấy kích thước sau "Material="
+                    }
                 });
 
                 return {
-                    product_name: name,
+                    product_name: item.name,
                     stock_quantity: item.quantity,
                     product_price: Math.floor(parseFloat(item.price * 24057)),
                     productId: item.sku,
-                    image: item.description,
+                    image: item.image_url,
                     colorId: color, // Lưu thông tin color
                     sizeId: size, // Lưu thông tin size
+                    materialId: material
                 };
             });
             // Bây giờ bạn có thể sử dụng danh sách sản phẩm productList trong mã của bạn

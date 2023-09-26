@@ -12,6 +12,10 @@ const categorySchema = mongoose.Schema({
     type: Object,
     required: true
   },
+  price_increase_percent: {
+    type: Number, // % giá sản phẩm sẽ tăng nếu người dùng tự thiết kế sản phẩm (0-100%)
+    required: true
+  },
   products: [
     {
       type: mongoose.Types.ObjectId,
@@ -23,5 +27,5 @@ const categorySchema = mongoose.Schema({
   { timestamps: true, versionKey: false });
 
 categorySchema.plugin(mongoosePaginate);
-categorySchema.plugin(mongooseDelete, { overrideMethods: 'all',deletedAt : true  });
+categorySchema.plugin(mongooseDelete, { overrideMethods: 'all', deletedAt: true });
 export default mongoose.model("Category", categorySchema)

@@ -40,9 +40,18 @@ const CustomizedProductSchema = mongoose.Schema({
         type: mongoose.Types.ObjectId,
         ref: "Category",
     },
-    color: String, // Người dùng tự nhập tên màu
-    size: String,  // Người dùng tự nhập tên size
-    material: String, // Người dùng tự nhập tên chất liệu
+    colorId: {
+        type: mongoose.Types.ObjectId,
+        ref: "Color",
+    },
+    sizeId: {
+        type: mongoose.Types.ObjectId,
+        ref: "Size",
+    },
+    materialId: {
+        type: mongoose.Types.ObjectId,
+        ref: "Material",
+    }
 },
     { timestamps: true, versionKey: false });
 CustomizedProductSchema.plugin(mongoosePaginate);
