@@ -58,6 +58,27 @@ export const getOneComment = async (req, res) => {
 };
 
 
+export const getAllComment = async (req, res) => {
+    try {
+        const comments = await Comment.find().populate({
+            path: 'productId',
+            select: 'name',
+        }).populate({
+            path: 'userId',
+            select: 'name email image',
+        });
+        return res.status(200).json({
+            message: 'Lấy tất cả bình luận thành công',
+            comments,
+        });
+    } catch (error) {
+        res.status(400).json({
+            message: error.message,
+        });
+    }
+};
+
+
 export const create = async (req, res) => {
     try {
         const { userId, rating, description, productId } = req.body;
@@ -135,7 +156,8 @@ export const create = async (req, res) => {
 };
 
 
-export const updateComment = async (req, res) => {
+
+export const updateCommentByAdmin = async (req, res) => {
     try {
         const id = req.params.id;
         const body = req.body;
@@ -148,7 +170,7 @@ export const updateComment = async (req, res) => {
         }
         const comment = await Comment.findByIdAndUpdate(id, body, { new: true });
         return res.status(200).json({
-            message: 'Cập nhật bình luận thành công',
+            message: 'Admin thay đổi bình luận thành công',
             comment
         });
     }
@@ -158,6 +180,50 @@ export const updateComment = async (req, res) => {
         });
     }
 };
+
+
+export const updateCommentByUser = async (req, res) => {
+    try {
+        const id = req.params.id;
+        const body = req.body;
+        const { userId = '' } = req.query;
+        const { error } = CommentSchema.validate(body, { abortEarly: false });
+        if (error) {
+            const errors = error.details.map((err) => err.message);
+            return res.status(400).json({
+                message: errors
+            })
+        }
+        const findCommentById = await Comment.findById(id);
+        if (!findCommentById) {
+            return res.status(404).json({
+                message: "Không tìm thấy bình luận"
+            })
+        }
+        if (findCommentById.userId == userId) {
+            const comment = await Comment.findByIdAndUpdate(id, body, { new: true });
+            if (!comment) {
+                return res.status(400).json({
+                    message: "Thay đổi bình luận của chính mình thất bại"
+                })
+            }
+            return res.status(200).json({
+                message: 'Thay đổi bình luận của chính mình thành công',
+                comment
+            });
+        } else {
+            return res.status(403).json({
+                message: "Bạn không có quyền thay đổi bình luận này!"
+            })
+        }
+    }
+    catch (error) {
+        return res.status(400).json({
+            message: error.message
+        });
+    }
+};
+
 
 
 // Remove comment by user ( Người dùng có thể tự xóa comment của chính mình )
@@ -180,7 +246,8 @@ export const removeCommentByUser = async (req, res) => {
             // Xóa bình luận
             const comment = await Comment.findByIdAndDelete(id);
             return res.status(200).json({
-                message: "Xóa bình luận thành công"
+                message: "Xóa bình luận thành công",
+                comment
             });
         } else {
             // Trả về mã lỗi 403 nếu người dùng không có quyền xóa bình luận này
@@ -215,22 +282,3 @@ export const removeCommentByAdmin = async (req, res) => {
 
 
 
-export const getAllComment = async (req, res) => {
-    try {
-        const comments = await Comment.find().populate({
-            path: 'productId',
-            select: 'name',
-        }).populate({
-            path: 'userId',
-            select: 'name email image',
-        });
-        return res.status(200).json({
-            message: 'Lấy tất cả bình luận thành công',
-            comments,
-        });
-    } catch (error) {
-        res.status(400).json({
-            message: error.message,
-        });
-    }
-};
