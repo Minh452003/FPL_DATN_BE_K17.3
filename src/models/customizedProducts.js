@@ -40,6 +40,10 @@ const CustomizedProductSchema = mongoose.Schema({
         type: mongoose.Types.ObjectId,
         ref: "Category",
     },
+    brandId: {
+        type: mongoose.Types.ObjectId,
+        ref: "Brand",
+    },
     colorId: {
         type: mongoose.Types.ObjectId,
         ref: "Color",

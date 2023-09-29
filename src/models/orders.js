@@ -27,6 +27,10 @@ const orderSchema = mongoose.Schema({
     type: Number,
     required: true
   },
+  deposit: {
+    type: Number,
+    default: 0
+  },
   status: {
     type: mongoose.Types.ObjectId,
     ref: "Status",
