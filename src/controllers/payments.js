@@ -307,3 +307,68 @@ export const PayPalSuccess = (req, res) => {
         }
     });
 }
+// 
+export const depositSuccess = async (req, res) => {
+    const body = req.query;
+    const deposit = body.amount
+    const paymentId = body.orderId;
+    const paymentCode = body.requestId;
+    const payerId = body.orderInfo
+    // Tạo một đối tượng để lưu trữ các giá trị
+    const data = {};
+
+    // Tách chuỗi thành các cặp key-value dựa trên dấu "&"
+    const keyValuePairs = body.extraData.split('&');
+
+    // Lặp qua từng cặp key-value
+    keyValuePairs.forEach((keyValue) => {
+        // Tách mỗi cặp thành key và value dựa trên dấu "="
+        const [key, value] = keyValue.split('=');
+
+        // Kiểm tra nếu giá trị là một chuỗi JSON
+        if (key === 'products') {
+            // Sử dụng JSON.parse() để chuyển thành đối tượng JavaScript
+            data[key] = JSON.parse(decodeURIComponent(value));
+        } else {
+            // Lưu trữ các giá trị khác
+            data[key] = decodeURIComponent(value);
+        }
+    });
+
+    // Bây giờ bạn có thể truy cập các giá trị từ đối tượng data
+    const userId = data.userId;
+    const couponId = data.couponId;
+    const phone = data.phone;
+    const address = data.address;
+    const products = data.products;
+    const total = data.total
+    // Xử lý dữ liệu theo cách bạn muốn ở đây
+    const formattedData = {
+        userId,
+        couponId,
+        products: products,
+        total: Number(total),
+        deposit: Number(deposit),
+        phone,
+        address,
+        paymentId,
+        paymentCode,
+        payerId
+    };
+    // Kiểm tra xem có phiếu giảm giá được sử dụng trong đơn hàng không
+    if (formattedData.couponId !== null) {
+        // Tăng số lượng phiếu giảm giá đã sử dụng lên 1
+        const coupon = await Coupon.findById(formattedData.couponId);
+        if (coupon) {
+            if (coupon.coupon_quantity > 0) {
+                coupon.coupon_quantity -= 1;
+                await coupon.save();
+            } else {
+                return res.status(400).json({ message: 'Phiếu giảm giá đã hết lượt sử dụng' });
+            }
+        }
+    }
+    await Order.create(formattedData);
+
+    res.redirect('http://localhost:5173/order');
+}

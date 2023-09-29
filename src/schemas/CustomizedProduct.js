@@ -32,6 +32,11 @@ export const CustomizedProductSchema = Joi.object({
         "any.required": "Trường danh mục sản phẩm bắt buộc nhập",
         "string.base": "Danh mục sản phẩm phải là chuỗi"
     }),
+    brandId: Joi.string().required().messages({
+        "string.empty": "Thương hiệu bắt buộc nhập",
+        "any.required": "Trường thương hiệu bắt buộc nhập",
+        "string.base": "Thương hiệu phải là chuỗi"
+    }),
     colorId: Joi.string().required().messages({
         "string.empty": "Màu bắt buộc nhập",
         "any.required": "Trường màu bắt buộc nhập",

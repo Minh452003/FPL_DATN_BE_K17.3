@@ -11,6 +11,7 @@ export const orderSchema = Joi.object({
     total: Joi.number().min(0).required().messages({
         "number.min": "Không được nhập số âm"
     }),
+    deposit: Joi.number(),
     status: Joi.string(),
     phone: Joi.string().max(10).required().messages({
         "string.empty": "Mời điền số điện thoại",
