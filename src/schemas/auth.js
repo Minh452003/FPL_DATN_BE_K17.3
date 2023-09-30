@@ -91,4 +91,13 @@ export const changePasswordUserSchema = joi.object({
 })
 
 
+export const resetPasswordUserSchema = joi.object({
+    password: joi.string().min(6).required().messages({
+        "string.empty": "Mật khẩu không được để trống",
+        "any.required": "Trường mật khẩu là bắt buộc",
+        "string.min": "Mật khẩu phải có ít nhất {#limit} ký tự",
+    }),
+})
+
+
 

@@ -3,7 +3,8 @@ import crypto from "crypto-js";
 import nodemailer from 'nodemailer';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { changePasswordUserSchema } from "../schemas/auth.js";
+import { resetPasswordUserSchema,changePasswordUserSchema } from "../schemas/auth.js";
+
 
 
 
@@ -25,8 +26,8 @@ export const forgotPassword = async (req, res) => {
         user.passwordResetToken = crypto.SHA256(resetToken, 'DATN').toString();
         user.passwordResetExpires = Date.now() + 10 * 60 * 1000;
         await user.save({ validateBeforeSave: false })
-        const resetURL = `http://localhost:8088/api/resetPassword/${resetToken}`;
-        const message = `Bạn có thể thay đổi mật khẩu ${resetURL}`;
+        // const resetURL = `${resetToken}`;
+        const message = `Vui lòng dùng token để thay đổi mật khẩu của bạn: ${resetToken}`;
         const transporter = nodemailer.createTransport({
             tls: {
                 rejectUnauthorized: false
@@ -40,14 +41,14 @@ export const forgotPassword = async (req, res) => {
         const mailOptions = {
             from: process.env.MAIL_USERNAME,
             to: req.body.email,
-            subject: "FORGOT PASSWORD",
+            subject: "Forgot Password",
             text: message
         }
         try {
             await transporter.sendMail(mailOptions)
             return res.status(200).json({
                 status: "Gửi Token thành công",
-                message: "Vui lòng check gmail để lấy Token Reset Password"
+                message: "Vui lòng check gmail để lấy Token để Reset Password"
             })
         } catch (error) {
             user.passwordResetToken = undefined;
@@ -65,6 +66,15 @@ export const forgotPassword = async (req, res) => {
 export const resetPassword = async (req, res) => {
     try {
         const hashedToken = crypto.SHA256(req.params.token, 'DATN').toString();
+
+        const { error } = resetPasswordUserSchema.validate(req.body, { abortEarly: false });
+        if (error) {
+            const errors = error.details.map((err) => err.message);
+            return res.status(400).json({
+                message: errors
+            })
+        }
+
         const user = await Auth.findOne({
             passwordResetToken: hashedToken,
             passwordResetExpires: { $gt: Date.now() }
@@ -74,8 +84,9 @@ export const resetPassword = async (req, res) => {
                 message: "Token reset password hết hạn"
             })
         }
-        const handlePass = await bcrypt.hash(req.body.password, 10);
-        user.password = handlePass;
+
+        const hanshedPassword = await bcrypt.hash(req.body.password, 10);
+        user.password = hanshedPassword;
         user.passwordResetToken = undefined;
         user.passwordResetExpires = undefined;
         user.passwordChangeAt = Date.now();
