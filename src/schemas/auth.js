@@ -77,5 +77,18 @@ export const updateUserSchema = joi.object({
 });
 
 
+export const changePasswordUserSchema = joi.object({
+    currentPassword: joi.string().min(6).required().messages({
+        "string.empty": "Mật khẩu hiện tại không được để trống",
+        "any.required": "Trường mật khẩu hiện tại là bắt buộc",
+        "string.min": "Mật khẩu hiện tại phải có ít nhất {#limit} ký tự",
+    }),
+    newPassword: joi.string().min(6).required().messages({
+        "string.empty": "Mật khẩu mới không được để trống",
+        "any.required": "Trường mật khẩu mới là bắt buộc",
+        "string.min": "Mật khẩu mới phải có ít nhất {#limit} ký tự",
+    })
+})
+
 
 

@@ -3,6 +3,7 @@ import crypto from "crypto-js";
 import nodemailer from 'nodemailer';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import { changePasswordUserSchema } from "../schemas/auth.js";
 
 
 
@@ -98,15 +99,26 @@ export const resetPassword = async (req, res) => {
 
 export const changePassword = async (req, res) => {
     try {
+        const { error } = changePasswordUserSchema.validate(req.body, { abortEarly: false });
+        if (error) {
+            const errors = error.details.map((err) => err.message);
+            return res.status(400).json({
+                message: errors
+            })
+        }
+
         const user = req.user
-        const isMatch = await bcrypt.compare(user.password, req.body.currentPassword)
-        if (isMatch) {
+        // console.log(user);
+        const isMatch = await bcrypt.compare(req.body.currentPassword, user.password)
+        console.log(req.body.currentPassword);
+        console.log(user.password);
+        if (!isMatch) {
             return res.status(400).json({
                 message: "Mật khẩu hiện tại không đúng"
             })
         }
-        const hashedPassword = await bcrypt.hash(req.body.password, 10);
-        const userNew = await Auth.findByIdAndUpdate(req.user._id, { password: hashedPassword }, { new: true });
+        const hashedNewPassword = await bcrypt.hash(req.body.newPassword, 10);
+        const userNew = await Auth.findByIdAndUpdate(req.user._id, { password: hashedNewPassword }, { new: true });
         if (!userNew) {
             return res.status(400).json({
                 message: "Không tìm thấy người dùng"
