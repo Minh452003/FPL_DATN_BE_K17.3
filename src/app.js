@@ -22,6 +22,7 @@ import session from 'express-session'
 import passport from "passport";
 import routerMaterial from "./routers/materials.js";
 import routerCustomizedProduct from "./routers/customizedProduct.js";
+import routerChildProduct from "./routers/childProduct.js";
 
 dotenv.config();
 const app = express();
@@ -57,6 +58,7 @@ app.use("/api", routerSize);
 app.use("/api", routerPassport);
 app.use("/api", routerMaterial);
 app.use("/api", routerCustomizedProduct);
+app.use("/api", routerChildProduct);
 
 app.listen(8088, async () => {
     await mongoose.connect(process.env.URL_MONGO, { useNewUrlParser: true, useUnifiedTopology: true });
