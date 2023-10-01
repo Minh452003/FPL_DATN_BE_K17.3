@@ -30,10 +30,6 @@ const authSchema = new mongoose.Schema({
     avatar: {
         type: Object
     },
-    role: {
-        type: String,
-        default: "member",
-    },
     googleId: {
         type: String,
         default: null,
