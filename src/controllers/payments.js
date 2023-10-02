@@ -3,6 +3,8 @@ import { request } from 'https';
 import paypal from 'paypal-rest-sdk'
 import Order from "../models/orders.js"
 import Coupon from "../models/coupons.js"
+import Product from "../models/products.js";
+import ChildProduct from "../models/childProduct.js";
 
 export const PayMomo = (req, res) => {
     const accessKey = 'F8BBA842ECF85';
@@ -149,6 +151,23 @@ export const MomoSuccess = async (req, res) => {
         if (coupon) {
             coupon.coupon_quantity -= 1;
             await coupon.save();
+        }
+    }
+    // Lặp qua từng sản phẩm trong đơn hàng và cập nhật số lượng và số lượng sản phẩm đã bán
+    for (const item of formattedData.products) {
+        const product = await Product.findById(item.productId);
+        const childProduct = await ChildProduct.findOne({
+            productId: item.productId,
+            colorId: item.colorId,
+            sizeId: item.sizeId
+        });
+        if (product && childProduct) {
+            // Giảm số lượng sản phẩm tương ứng với số lượng mua
+            childProduct.stock_quantity -= item.stock_quantity; // Giảm số lượng theo số lượng trong giỏ hàng
+            // Tăng số lượng đã bán (view) tương ứng với số lượng mua
+            product.sold_quantity += item.stock_quantity; // Tăng view theo số lượng trong giỏ hàng
+            await childProduct.save();
+            await product.save();
         }
     }
     await Order.create(formattedData);
@@ -302,6 +321,23 @@ export const PayPalSuccess = (req, res) => {
                     return
                 }
             }
+            // Lặp qua từng sản phẩm trong đơn hàng và cập nhật số lượng và số lượng sản phẩm đã bán
+            for (const item of formattedData.products) {
+                const product = await Product.findById(item.productId);
+                const childProduct = await ChildProduct.findOne({
+                    productId: item.productId,
+                    colorId: item.colorId,
+                    sizeId: item.sizeId
+                });
+                if (product && childProduct) {
+                    // Giảm số lượng sản phẩm tương ứng với số lượng mua
+                    childProduct.stock_quantity -= item.stock_quantity; // Giảm số lượng theo số lượng trong giỏ hàng
+                    // Tăng số lượng đã bán (view) tương ứng với số lượng mua
+                    product.sold_quantity += item.stock_quantity; // Tăng view theo số lượng trong giỏ hàng
+                    await childProduct.save();
+                    await product.save();
+                }
+            }
             await Order.create(formattedData);
             res.redirect('http://localhost:5173/order'); // Thay đổi '/other-page' thành URL của trang khác
         }
@@ -366,6 +402,23 @@ export const depositSuccess = async (req, res) => {
             } else {
                 return res.status(400).json({ message: 'Phiếu giảm giá đã hết lượt sử dụng' });
             }
+        }
+    }
+    // Lặp qua từng sản phẩm trong đơn hàng và cập nhật số lượng và số lượng sản phẩm đã bán
+    for (const item of formattedData.products) {
+        const product = await Product.findById(item.productId);
+        const childProduct = await ChildProduct.findOne({
+            productId: item.productId,
+            colorId: item.colorId,
+            sizeId: item.sizeId
+        });
+        if (product && childProduct) {
+            // Giảm số lượng sản phẩm tương ứng với số lượng mua
+            childProduct.stock_quantity -= item.stock_quantity; // Giảm số lượng theo số lượng trong giỏ hàng
+            // Tăng số lượng đã bán (view) tương ứng với số lượng mua
+            product.sold_quantity += item.stock_quantity; // Tăng view theo số lượng trong giỏ hàng
+            await childProduct.save();
+            await product.save();
         }
     }
     await Order.create(formattedData);
