@@ -137,8 +137,6 @@ export const updateProduct = async (req, res) => {
     try {
         const id = req.params.id;
         const body = req.body;
-        const { categoryId } = req.body
-        const product = await CustomizedProduct.findById(id)
         const { error } = CustomizedProductSchema.validate(body, { abortEarly: false });
         if (error) {
             const errors = error.details.map((err) => err.message);
@@ -146,7 +144,7 @@ export const updateProduct = async (req, res) => {
                 message: errors
             })
         }
-        const data = await CustomizedProductSchema.findByIdAndUpdate({ _id: id }, body, { new: true })
+        const data = await CustomizedProduct.findByIdAndUpdate({ _id: id }, body, { new: true })
         if (data.length === 0) {
             return res.status(400).json({
                 message: "Cập nhật sản phẩm tự thiết kế thất bại"

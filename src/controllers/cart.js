@@ -4,8 +4,7 @@ import mongoose from 'mongoose'
 import { cartSchema } from '../schemas/cart.js';
 import Coupon from "../models/coupons.js"
 import Order from "../models/orders.js"
-import Product from "../models/products.js";
-import Size from "../models/size.js";
+import ChildProduct from "../models/childProduct.js";
 import CustomizedProduct from "../models/customizedProducts.js";
 
 
@@ -32,17 +31,13 @@ const addProduct = async (cartExist, productAdd, res) => {
             product.materialId === productAdd.materialId
         );
         if (productExist) {
-            const size = await Size.findById(productAdd.sizeId);
-            const updatedProductPrice = productAdd.product_price + size.size_price;
             productExist.stock_quantity += productAdd.stock_quantity;
-            productExist.product_price = updatedProductPrice; // Cập nhật giá sản phẩm
-            cartExist.total += productAdd.stock_quantity * updatedProductPrice;
+            cartExist.total += productAdd.stock_quantity * productAdd.product_price;
         } else {
-            const size = await Size.findById(productAdd.sizeId)
             const newProduct = {
                 productId: productAdd.productId,
                 product_name: productAdd.product_name,
-                product_price: productAdd.product_price + size.size_price,
+                product_price: productAdd.product_price,
                 image: productAdd.image,
                 stock_quantity: productAdd.stock_quantity,
                 sizeId: productAdd.sizeId,
@@ -55,7 +50,11 @@ const addProduct = async (cartExist, productAdd, res) => {
         for (const item of cartExist.products) {
             const customProduct = await CustomizedProduct.findById(item.productId);
             if (!customProduct) {
-                const product = await Product.findById(item.productId);
+                const product = await ChildProduct.findOne({
+                    productId: item.productId,
+                    colorId: item.colorId,
+                    sizeId: item.sizeId
+                });
                 if (!product || product.stock_quantity < item.stock_quantity) {
                     return res.status(400).json({ message: `Đã quá số hàng tồn` });
                 }
@@ -103,7 +102,11 @@ export const create = async (req, res) => {
         const userId = req.params.id
         const productNeedToAdd = req.body
         const userExist = await Auth.findById(userId);
-        const product = await Product.findById(productNeedToAdd.productId);
+        const product = await ChildProduct.findOne({
+            productId: productNeedToAdd.productId,
+            colorId: productNeedToAdd.colorId,
+            sizeId: productNeedToAdd.sizeId
+        });
         const customProduct = await CustomizedProduct.findById(productNeedToAdd.productId);
         if (!userExist) {
             return res.status(404).json({

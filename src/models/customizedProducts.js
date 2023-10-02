@@ -24,10 +24,6 @@ const CustomizedProductSchema = mongoose.Schema({
         type: Object,
         required: true
     },
-    sold_quantity: {
-        type: Number,
-        default: 0
-    },
     stock_quantity: {
         type: Number,
         required: true

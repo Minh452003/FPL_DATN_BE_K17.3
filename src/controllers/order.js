@@ -2,6 +2,7 @@ import Order from "../models/orders.js"
 import { orderSchema } from "../schemas/order.js";
 import Coupon from "../models/coupons.js"
 import Product from "../models/products.js";
+import ChildProduct from "../models/childProduct.js";
 const { createHmac } = await import('node:crypto');
 import { request } from 'https';
 
@@ -70,13 +71,15 @@ export const removeOrder = async (req, res) => {
         }
         // Lặp qua từng sản phẩm trong đơn hàng và cập nhật lại số lượng sản phẩm và view
         for (const item of order.products) {
-            const product = await Product.findById(item.productId);
-            if (product) {
-                // Tăng số lượng sản phẩm lên theo số lượng đã hủy
-                product.stock_quantity += item.stock_quantity;
-                // Giảm số lượng đã bán (view) đi theo số lượng đã hủy
-                product.sold_quantity -= item.stock_quantity;
-                await product.save();
+            // Tăng số lượng sản phẩm lên theo số lượng đã hủy
+            const childProduct = await ChildProduct.findOne({
+                productId: item.productId,
+                colorId: item.colorId,
+                sizeId: item.sizeId
+            });
+            if (childProduct) {
+                childProduct.stock_quantity += item.stock_quantity;
+                await childProduct.save();
             }
         }
         await Order.findByIdAndDelete(req.params.id);
@@ -206,11 +209,17 @@ export const createOrder = async (req, res) => {
             // Lặp qua từng sản phẩm trong đơn hàng và cập nhật số lượng và số lượng sản phẩm đã bán
             for (const item of body.products) {
                 const product = await Product.findById(item.productId);
-                if (product) {
+                const childProduct = await ChildProduct.findOne({
+                    productId: item.productId,
+                    colorId: item.colorId,
+                    sizeId: item.sizeId
+                });
+                if (product && childProduct) {
                     // Giảm số lượng sản phẩm tương ứng với số lượng mua
-                    product.stock_quantity -= item.stock_quantity; // Giảm số lượng theo số lượng trong giỏ hàng
+                    childProduct.stock_quantity -= item.stock_quantity; // Giảm số lượng theo số lượng trong giỏ hàng
                     // Tăng số lượng đã bán (view) tương ứng với số lượng mua
                     product.sold_quantity += item.stock_quantity; // Tăng view theo số lượng trong giỏ hàng
+                    await childProduct.save();
                     await product.save();
                 }
             }

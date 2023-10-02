@@ -1,10 +1,7 @@
 import Joi from "joi";
 
-export const CustomizedProductSchema = Joi.object({
+export const childProductSchema = Joi.object({
     _id: Joi.string(),
-    userId: Joi.string().required().messages({
-        'any.required': 'userId không được để trống.',
-    }),
     productId: Joi.string().required().messages({
         'any.required': 'productId không được để trống.',
     }),
@@ -20,21 +17,11 @@ export const CustomizedProductSchema = Joi.object({
     image: Joi.object().required().messages({
         "any.required": "Trường ảnh sản phẩm bắt buộc nhập"
     }),
-    description: Joi.string(),
+    sold_quantity: Joi.number(),
     stock_quantity: Joi.number().required().messages({
         "number.empty": "Số lượng tồn kho bắt buộc nhập",
         "any.required": "Trường Số lượng tồn kho bắt buộc nhập",
         "number.base": "Số lượng tồn kho sản phẩm phải là số"
-    }),
-    categoryId: Joi.string().required().messages({
-        "string.empty": "Danh mục sản phẩm bắt buộc nhập",
-        "any.required": "Trường danh mục sản phẩm bắt buộc nhập",
-        "string.base": "Danh mục sản phẩm phải là chuỗi"
-    }),
-    brandId: Joi.string().required().messages({
-        "string.empty": "Thương hiệu bắt buộc nhập",
-        "any.required": "Trường thương hiệu bắt buộc nhập",
-        "string.base": "Thương hiệu phải là chuỗi"
     }),
     colorId: Joi.string().required().messages({
         "string.empty": "Màu bắt buộc nhập",
@@ -45,10 +32,5 @@ export const CustomizedProductSchema = Joi.object({
         "string.empty": "Kích cỡ bắt buộc nhập",
         "any.required": "Trường kích cỡ bắt buộc nhập",
         "string.base": "Kích cỡ phải là chuỗi"
-    }),
-    materialId: Joi.string().required().messages({
-        "string.empty": "Chất liệu bắt buộc nhập",
-        "any.required": "Trường chất liệu bắt buộc nhập",
-        "string.base": "Chất liệu phải là chuỗi"
     })
 })
