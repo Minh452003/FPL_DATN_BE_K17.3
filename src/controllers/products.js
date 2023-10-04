@@ -186,3 +186,23 @@ export const updateProduct = async (req, res) => {
         })
     }
 }
+
+export const viewProduct = async (req, res) => {
+    try {
+        const productId = req.params.id;
+        const product = await Product.findById(productId);
+
+        if (!product) {
+            return res.status(404).json({ error: 'Sản phẩm không tồn tại.' });
+        }
+
+        // Tăng số lượng xem của sản phẩm
+        product.views += 1;
+        await product.save();
+
+        res.json({ message: 'Đã xem sản phẩm.' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Lỗi trong quá trình xử lý.' });
+    }
+}
