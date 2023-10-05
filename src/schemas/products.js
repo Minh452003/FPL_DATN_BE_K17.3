@@ -16,11 +16,7 @@ export const ProductSchema = Joi.object({
     }),
     sold_quantity: Joi.number(),
     description: Joi.string(),
-    // stock_quantity: Joi.number().required().messages({
-    //     "number.empty": "Số lượng tồn kho bắt buộc nhập",
-    //     "any.required": "Trường Số lượng tồn kho bắt buộc nhập",
-    //     "number.base": "Số lượng tồn kho sản phẩm phải là số"
-    // }),
+    views: Joi.number(),
     categoryId: Joi.string().required().messages({
         "string.empty": "Danh mục sản phẩm bắt buộc nhập",
         "any.required": "Trường danh mục sản phẩm bắt buộc nhập",

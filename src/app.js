@@ -23,6 +23,7 @@ import passport from "passport";
 import routerMaterial from "./routers/materials.js";
 import routerCustomizedProduct from "./routers/customizedProduct.js";
 import routerChildProduct from "./routers/childProduct.js";
+import routerStatiscal from "./routers/statistical.js";
 
 dotenv.config();
 const app = express();
@@ -59,6 +60,7 @@ app.use("/api", routerPassport);
 app.use("/api", routerMaterial);
 app.use("/api", routerCustomizedProduct);
 app.use("/api", routerChildProduct);
+app.use("/api", routerStatiscal);
 
 app.listen(8088, async () => {
     await mongoose.connect(process.env.URL_MONGO, { useNewUrlParser: true, useUnifiedTopology: true });

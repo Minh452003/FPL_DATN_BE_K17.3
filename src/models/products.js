@@ -18,10 +18,10 @@ const productsSchema = mongoose.Schema({
         type: Number,
         default: 0
     },
-    // stock_quantity: {
-    //     type: Number,
-    //     required: true
-    // },
+    views: {
+        type: Number,
+        default: 0
+    },
     description: {
         type: String,
         required: true
