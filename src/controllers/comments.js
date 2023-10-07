@@ -2,6 +2,7 @@ import Comment from "../models/comments.js";
 import { CommentSchema } from "../schemas/comments.js";
 import Product from "../models/products.js";
 import Auth from "../models/auth.js";
+import Order from "../models/orders.js"
 
 export const getCommentFromProduct = async (req, res) => {
     try {
@@ -87,7 +88,7 @@ export const create = async (req, res) => {
             const errors = error.details.map((err) => err.message);
             return res.status(400).json({
                 message: errors
-            })
+            });
         }
         if (!userId) {
             return res.status(401).json({
@@ -96,7 +97,6 @@ export const create = async (req, res) => {
         }
         // Check if the product exists
         const product = await Product.findById(productId);
-
         if (!product) {
             return res.status(404).json({
                 message: "Sản phẩm không tồn tại.",
@@ -104,56 +104,64 @@ export const create = async (req, res) => {
         }
         // Check if the user exists
         const user = await Auth.findById(userId);
-
         if (!user) {
             return res.status(404).json({
                 message: "Người dùng không tồn tại.",
             });
         }
 
-        // Check if the user already reviewed the product
-        const existingComment = await Comment.findOne({ userId, productId });
-
-        if (existingComment) {
-            return res.status(401).json({
-                message: "Bạn đã đánh giá sản phẩm này trước đó.",
-            });
+        // Tìm tất cả các đơn hàng của người dùng
+        const orders = await Order.find({ userId });
+        // Kiểm tra từng đơn hàng
+        const productList = [];
+        for (const order of orders) {
+            for (const product of order.products) {
+                productList.push(product);
+            }
         }
-        const user_fullName = user?.user_fullName;
-        const user_avatar = user?.user_avatar;
-        const comment = await Comment.create({
-            user_fullName,
-            user_avatar,
-            userId,
-            rating,
-            description,
-            productId,
+        const productToReview = productList.find((product) => {
+            return (
+                !product.hasReviewed && product.productId == productId
+            );
         });
-        const comments = await Comment.find({ productId });
-        const totalRating = comments.reduce(
-            (totalRating, rating) => totalRating + rating.rating,
-            0
-        );
-        // Tính toán số lượng sao và lươtj đánh giá
-        const reviewCount = comments.length;
-        const averageScore = totalRating / reviewCount;
+        console.log(productToReview);
+        if (productToReview) {
+            // Nếu sản phẩm có thể đánh giá, đánh giá sản phẩm và cập nhật trạng thái đã đánh giá
+            const comment = await Comment.create({
+                userId,
+                rating,
+                description,
+                productId,
+            });
+            // Cập nhật trường hasReviewed của sản phẩm trong mảng products của đơn hàng
+            const orderToUpdate = orders.find((order) => {
+                return order.products.some((product) => product._id == productToReview._id);
+            });
 
-        product.average_score = Math.round(averageScore);
-        product.review_count = reviewCount;
-        await product.save();
-        if (user) {
+            const productToUpdate = orderToUpdate.products.find((product) => product._id == productToReview._id);
+            productToUpdate.hasReviewed = true;
+
+            // Lưu đơn hàng sau khi đã cập nhật
+            await orderToUpdate.save();
             return res.status(200).json({
                 message: "Bạn đã đánh giá thành công sản phẩm này!",
                 success: true,
                 comment,
             });
+        } else {
+            return res.status(401).json({
+                message: "Bạn đã đánh giá sản phẩm này trước đó.",
+            });
         }
     } catch (error) {
+        console.log(error.message);
+        // Xử lý lỗi và trả về lỗi nếu cần thiết
         return res.status(400).json({
-            message: error,
+            message: error.message,
         });
     }
 };
+
 
 
 
