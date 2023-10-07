@@ -186,16 +186,17 @@ paypal.configure({
 
 export const PayPal = (req, res) => {
     const { products, userId, couponId, phone, address } = req.body
-    const exchangeRate = 1 / 24057
+    const exchangeRate = 1 / 24057;
     const transformedProducts = products.map(product => {
-        const classOption = `Color=${product.colorId}&&Size=${product.sizeId}&&Material=${product.materialId}`;
+        const classOption = `Price=${product.product_price}&&Color=${product.colorId}&&Size=${product.sizeId}&&Material=${product.materialId}`;
+        const priceUsd = (product.product_price * exchangeRate).toFixed(2);
         return {
             sku: product.productId,
             name: product.product_name,
             quantity: product.stock_quantity,
             image_url: product.image,
             description: classOption,
-            price: (product.product_price * exchangeRate).toFixed(2),
+            price: priceUsd,
             currency: 'USD',
         };
     });
@@ -259,7 +260,7 @@ export const PayPalSuccess = (req, res) => {
             // Xử lý lỗi ở đây nếu cần
         } else {
             // Truy cập thông tin giao dịch từ đối tượng payment
-            const paidAmount = Math.floor(parseFloat(payment.transactions[0].amount.total * 24057));
+            // const paidAmount = Math.floor(parseFloat(payment.transactions[0].amount.total * 24057));
             const productList = payment.transactions[0].item_list.items.map(item => {
                 const classOption = item.description.split('&&'); // Tách thông tin theo dấu &&
 
@@ -267,6 +268,7 @@ export const PayPalSuccess = (req, res) => {
                 let color = '';
                 let size = '';
                 let material = '';
+                let price = '';
                 // Lặp qua từng phần tử trong productInfo
                 classOption.forEach(info => {
                     if (info.includes('Color=')) {
@@ -278,12 +280,14 @@ export const PayPalSuccess = (req, res) => {
                     if (info.includes('Material=')) {
                         material = info.replace('Material=', ''); // Lấy kích thước sau "Material="
                     }
+                    if (info.includes('Price=')) {
+                        price = info.replace('Price=', ''); // Lấy kích thước sau "Material="
+                    }
                 });
-
                 return {
                     product_name: item.name,
                     stock_quantity: item.quantity,
-                    product_price: Math.floor(parseFloat(item.price * 24057)),
+                    product_price: Number(price),
                     productId: item.sku,
                     image: item.image_url,
                     colorId: color, // Lưu thông tin color
@@ -297,10 +301,13 @@ export const PayPalSuccess = (req, res) => {
             const address = customData.address;
             const userId = customData.userId;
             const couponId = customData.couponId
+            const totalMoney = productList.reduce((acc, product) => {
+                return acc + (product.product_price * product.stock_quantity);
+            }, 0);
             // Tạo đối tượng có định dạng bạn mong muốn
             const formattedData = {
                 products: productList,
-                total: paidAmount,
+                total: totalMoney,
                 phone,
                 address,
                 userId,
