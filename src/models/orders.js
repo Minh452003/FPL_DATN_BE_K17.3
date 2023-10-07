@@ -20,7 +20,11 @@ const orderSchema = mongoose.Schema({
       stock_quantity: Number,
       sizeId: String,
       colorId: String,
-      materialId: String
+      materialId: String,
+      hasReviewed: {
+        type: Boolean,
+        default: false, // Ban đầu, đánh dấu là chưa đánh giá
+      },
     }
   ],
   total: {
