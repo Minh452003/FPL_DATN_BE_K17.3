@@ -30,6 +30,10 @@ const authSchema = new mongoose.Schema({
     avatar: {
         type: Object
     },
+    verified: {
+        type: Boolean,
+        default: false
+    },
     googleId: {
         type: String,
         default: null,
@@ -58,7 +62,7 @@ const authSchema = new mongoose.Schema({
     },
     createdAt: {
         type: Date,
-        default: Date.now
+        default: Date.now()
     }
 });
 authSchema.virtual("formattedCreatedAt").get(function () {
