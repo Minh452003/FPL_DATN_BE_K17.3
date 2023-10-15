@@ -1,10 +1,12 @@
 import express from "express";
-import { getProductStatistics, getReviewStatistics, getTotalOrders, getUserStatistics } from "../controllers/statistical.js";
+import { getReviewStatistics, getTopSellingProducts, getRevenueAndProfit, getUserStatistics, getTopViewedProducts, getTotalSoldQuantity } from "../controllers/statistical.js";
 
 const routerStatiscal = express.Router();
 
-routerStatiscal.get('/statistical/orders', getTotalOrders);
-routerStatiscal.get('/statistical/products', getProductStatistics);
+routerStatiscal.get('/statistical/orders', getRevenueAndProfit);
+routerStatiscal.get('/statistical/products-sell', getTopSellingProducts);
+routerStatiscal.get('/statistical/products-view', getTopViewedProducts);
+routerStatiscal.get('/statistical/products-sold', getTotalSoldQuantity);
 routerStatiscal.get('/statistical/users', getUserStatistics);
 routerStatiscal.get('/statistical/comments', getReviewStatistics);
 

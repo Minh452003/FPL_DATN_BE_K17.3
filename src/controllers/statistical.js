@@ -4,142 +4,334 @@ import Auth from "../models/auth.js";
 import Category from "../models/category.js";
 import Comment from "../models/comments.js";
 
-export const getTotalOrders = async (req, res) => {
+export const getRevenueAndProfit = async (req, res) => {
     try {
-        const totalOrders = await Order.countDocuments();
+        const { year, month } = req.query;
+        let matchCondition = {}; // Điều kiện tìm kiếm dựa trên năm và/hoặc tháng
 
-        const totalOrderValue = await Order.aggregate([
+        if (year) {
+            matchCondition.year = parseInt(year);
+        } else {
+            return res.status(400).json({ error: 'Thiếu thông tin năm trong yêu cầu.' });
+        }
+
+        if (month) {
+            matchCondition.month = parseInt(month);
+        }
+
+        if (!year && !month) {
+            return res.status(400).json({ error: 'Thiếu thông tin tháng hoặc năm trong yêu cầu.' });
+        }
+
+        // Sử dụng aggregation framework của MongoDB để thống kê doanh thu và lợi nhuận
+        const revenueAndProfit = await Order.aggregate([
             {
-                $group: {
-                    _id: null,
-                    total: { $sum: '$total' },
+                $project: {
+                    year: { $year: '$createdAt' },
+                    month: { $month: '$createdAt' },
+                    total: 1, // Tổng tiền của đơn hàng
                 },
             },
-        ]);
-        res.json({
-            totalOrders,
-            totalOrderValue: totalOrderValue.length > 0 ? totalOrderValue[0].total : 0,
-        });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Lỗi trong quá trình xử lý.' });
-    }
-}
-export const getProductStatistics = async (req, res) => {
-    try {
-        // Số lượng sản phẩm đã xem (tổng số lượt xem của tất cả sản phẩm)
-        const totalViewedProducts = await Product.aggregate([
-            { $group: { _id: null, totalViews: { $sum: '$views' } } },
-        ]);
-
-        const totalQuantityProducts = await Product.aggregate([
-            { $group: { _id: null, totalQuantity: { $sum: '$sold_quantity' } } },
-        ]);
-        // Sản phẩm được xem nhiều nhất (sản phẩm có số lượt xem cao nhất)
-        const mostViewedProduct = await Product.findOne().sort({ views: -1 });
-        // Sản phẩm được mua nhiều nhất (sản phẩm có số lượng mua cao nhất)
-        const mostQuantityProduct = await Product.findOne().sort({ sold_quantity: -1 });
-        // 
-        // Thực hiện aggregation để đếm sản phẩm theo danh mục
-        const result = await Product.aggregate([
             {
-                $group: {
-                    _id: '$categoryId',
-                    count: { $sum: 1 },
-                },
+                $match: matchCondition,
             },
-        ]);
-
-        // Sau khi có kết quả, tìm kiếm thông tin tên danh mục dựa trên categoryId
-        const productStats = await Promise.all(result.map(async (item) => {
-            const category = await Category.findById(item._id);
-            return {
-                category: category ? category.category_name : 'Unknown',
-                count: item.count,
-            };
-        }));
-
-        res.json({
-            totalViewedProducts: totalViewedProducts.length > 0 ? totalViewedProducts[0].totalViews : 0,
-            totalQuantityProducts,
-            mostQuantityProduct,
-            mostViewedProduct,
-            productStats
-        });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Lỗi trong quá trình xử lý.' });
-    }
-}
-
-export const getUserStatistics = async (req, res) => {
-    try {
-        const accountCount = await Auth.countDocuments();
-        const resultCreatedAt = await Auth.aggregate([
             {
                 $group: {
                     _id: {
-                        year: { $year: '$createdAt' },
-                        month: { $month: '$createdAt' },
-                        day: { $dayOfMonth: '$createdAt' },
+                        year: '$year',
                     },
-                    count: { $sum: 1 },
+                    total: { $sum: '$total' },
+                    profit: { $sum: { $multiply: ['$total', 0.25] } }, // Tính lợi nhuận (25%)
                 },
             },
-        ]);
-        const resultType = await Auth.aggregate([
             {
-                $group: {
-                    _id: '$authType',
-                    count: { $sum: 1 },
+                $project: {
+                    _id: 0,
+                    year: '$_id.year',
+                    total: 1,
+                    profit: 1,
+                },
+            },
+            {
+                $sort: {
+                    year: 1,
                 },
             },
         ]);
-        res.json({
-            accountCount,
-            resultCreatedAt,
-            resultType
-        });
+
+        res.json(revenueAndProfit);
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Lỗi trong quá trình xử lý.' });
     }
 }
-// 
-export const getReviewStatistics = async (req, res) => {
+
+export const getTopSellingProducts = async (req, res) => {
     try {
-        // Sử dụng Mongoose để đếm số lượng đánh giá
-        const totalReviewCount = await Comment.countDocuments();
-        const result = await Comment.aggregate([
+        const { year, month } = req.query;
+        let query = {};
+
+        if (year && month) {
+            query = {
+                $and: [
+                    { $expr: { $eq: [{ $year: '$createdAt' }, parseInt(year)] } },
+                    { $expr: { $eq: [{ $month: '$createdAt' }, parseInt(month)] } }
+                ]
+            };
+        } else if (year) {
+            query = { $expr: { $eq: [{ $year: '$createdAt' }, parseInt(year)] } };
+        } else if (month) {
+            return res.status(400).json({ error: 'Thiếu thông tin năm trong yêu cầu.' });
+        } else {
+            return res.status(400).json({ error: 'Thiếu thông tin tháng hoặc năm trong yêu cầu.' });
+        }
+
+        // Thực hiện truy vấn dựa trên query
+        const topSellingProducts = await Product.aggregate([
             {
-                $group: {
-                    _id: null,
-                    averageRating: { $avg: '$rating' },
-                },
+                $match: query,
+            },
+            {
+                $sort: { sold_quantity: -1 },
+            },
+            {
+                $limit: 5, // Lấy top 5 sản phẩm
             },
         ]);
-        // Trích xuất kết quả
-        const averageRating = result[0].averageRating;
-        // 
-        const review = await Comment.aggregate([
+
+        res.json(topSellingProducts);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Lỗi trong quá trình xử lý.' });
+    }
+}
+
+export const getTopViewedProducts = async (req, res) => {
+    try {
+        const { year, month } = req.query;
+        let query = {};
+
+        if (year && month) {
+            query = {
+                $and: [
+                    { $expr: { $eq: [{ $year: '$createdAt' }, parseInt(year)] } },
+                    { $expr: { $eq: [{ $month: '$createdAt' }, parseInt(month)] } }
+                ]
+            };
+        } else if (year) {
+            query = { $expr: { $eq: [{ $year: '$createdAt' }, parseInt(year)] } };
+        } else if (month) {
+            return res.status(400).json({ error: 'Thiếu thông tin năm trong yêu cầu.' });
+        } else {
+            return res.status(400).json({ error: 'Thiếu thông tin tháng hoặc năm trong yêu cầu.' });
+        }
+
+        // Thực hiện truy vấn dựa trên query
+        const topSellingProducts = await Product.aggregate([
+            {
+                $match: query,
+            },
+            {
+                $sort: { views: -1 },
+            },
+            {
+                $limit: 5, // Lấy top 5 sản phẩm
+            },
+        ]);
+
+        res.json(topSellingProducts);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Lỗi trong quá trình xử lý.' });
+    }
+}
+
+export const getTotalSoldQuantity = async (req, res) => {
+    try {
+        const { year, month } = req.query;
+        const matchCondition = {}; // Điều kiện tìm kiếm dựa trên năm và/hoặc tháng
+        const projectFields = {
+            sold_quantity: 1,
+            year: { $year: '$createdAt' },
+            month: { $month: '$createdAt' },
+        };
+
+        if (year) {
+            matchCondition.year = parseInt(year);
+        } else {
+            return res.status(400).json({ error: 'Thiếu thông tin năm trong yêu cầu.' });
+        }
+
+        if (month) {
+            matchCondition.month = parseInt(month);
+        }
+
+        if (!year && !month) {
+            return res.status(400).json({ error: 'Thiếu thông tin tháng hoặc năm trong yêu cầu.' });
+        }
+
+        const aggregationStages = [
+            {
+                $project: projectFields,
+            },
+            {
+                $match: matchCondition,
+            },
             {
                 $group: {
-                    _id: '$rating',
+                    _id: {
+                        year: '$year',
+                        month: '$month',
+                    },
+                    totalSoldQuantity: { $sum: '$sold_quantity' },
+                },
+            },
+            {
+                $project: {
+                    _id: 0,
+                    year: '$_id.year',
+                    month: '$_id.month',
+                    totalSoldQuantity: 1,
+                },
+            },
+            {
+                $sort: {
+                    year: 1,
+                    month: 1,
+                },
+            },
+        ];
+
+        // Kiểm tra nếu không có điều kiện tháng (chỉ có năm), thì gộp tất cả dữ liệu thành 1
+        if (!month) {
+            aggregationStages.splice(2, 1, {
+                $group: {
+                    _id: {
+                        year: '$year',
+                    },
+                    totalSoldQuantity: { $sum: '$sold_quantity' },
+                },
+            });
+        }
+
+        const totalSoldQuantity = await Product.aggregate(aggregationStages);
+
+        res.json(totalSoldQuantity);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Lỗi trong quá trình xử lý.' });
+    }
+}
+
+
+
+export const getUserStatistics = async (req, res) => {
+    try {
+        const { year, month } = req.query;
+        const aggregationStages = [];
+
+        if (year) {
+            aggregationStages.push({
+                $match: {
+                    createdAt: {
+                        $gte: new Date(parseInt(year), 0, 1),
+                        $lt: new Date(parseInt(year) + 1, 0, 1),
+                    },
+                },
+            });
+
+            if (month) {
+                aggregationStages[0].$match.createdAt = {
+                    $gte: new Date(parseInt(year), parseInt(month) - 1, 1),
+                    $lt: new Date(parseInt(year), parseInt(month), 1),
+                };
+            }
+        } else {
+            return res.status(400).json({ error: 'Thiếu thông tin năm trong yêu cầu.' });
+        }
+
+        const groupFields = { year: { $year: '$createdAt' } };
+        if (month) {
+            groupFields.month = { $month: '$createdAt' };
+        }
+
+        const result = await Auth.aggregate([
+            ...aggregationStages,
+            {
+                $group: {
+                    _id: groupFields,
                     count: { $sum: 1 },
                 },
             },
         ]);
 
-        // Tính toán số lượng đánh giá tích cực (cao hơn 3 sao) và tiêu cực (3 sao hoặc thấp hơn)
-        const positiveCount = review.filter((item) => item._id > 3).reduce((acc, cur) => acc + cur.count, 0);
-        const negativeCount = review.filter((item) => item._id <= 3).reduce((acc, cur) => acc + cur.count, 0);
+        res.json(result);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Lỗi trong quá trình xử lý.' });
+    }
+}
+
+// 
+export const getReviewStatistics = async (req, res) => {
+    try {
+        const { year, month } = req.query;
+        const aggregationStages = [];
+
+        if (year) {
+            aggregationStages.push({
+                $match: {
+                    createdAt: {
+                        $gte: new Date(parseInt(year), 0, 1),
+                        $lt: new Date(parseInt(year) + 1, 0, 1),
+                    },
+                },
+            });
+
+            if (month) {
+                aggregationStages[0].$match.createdAt = {
+                    $gte: new Date(parseInt(year), parseInt(month) - 1, 1),
+                    $lt: new Date(parseInt(year), parseInt(month), 1),
+                };
+            }
+        } else {
+            return res.status(400).json({ error: 'Thiếu thông tin năm trong yêu cầu.' });
+        }
+
+        const result = await Comment.aggregate([
+            ...aggregationStages,
+            {
+                $group: {
+                    _id: null,
+                    totalReviewCount: { $sum: 1 },
+                    averageRating: { $avg: '$rating' },
+                    reviewDistribution: {
+                        $push: {
+                            rating: '$rating',
+                        },
+                    },
+                },
+            },
+        ]);
+        if (result.length === 0) {
+            return res.status(400).json({ error: 'Không có đánh giá.' });
+        }
+        const totalReviewCount = result[0].totalReviewCount;
+        const averageRating = (result[0].averageRating).toFixed(2);
+        const reviewDistribution = result[0].reviewDistribution;
+
+        const positiveCount = reviewDistribution.filter((item) => item.rating > 3).length;
+        const negativeCount = reviewDistribution.filter((item) => item.rating <= 3).length;
+
         res.json({
-            totalReviewCount,
-            averageRating,
-            ratingDistribution: review, positiveCount, negativeCount
+            tongdanhgia: totalReviewCount,
+            trungbinh: averageRating,
+            tichcuc: positiveCount,
+            tieucuc: negativeCount,
         });
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Lỗi trong quá trình xử lý.' });
     }
 }
+
