@@ -5,7 +5,9 @@ import Order from "../models/orders.js"
 import Coupon from "../models/coupons.js"
 import Product from "../models/products.js";
 import ChildProduct from "../models/childProduct.js";
-
+import CryptoJS from "crypto-js";
+import axios from 'axios';
+import moment from 'moment';
 export const PayMomo = (req, res) => {
     const accessKey = 'F8BBA842ECF85';
     const secretKey = 'K951B6PE1waDMi640xX08PD3vg6EkVlz';
@@ -34,7 +36,6 @@ export const PayMomo = (req, res) => {
     const signature = createHmac('sha256', secretKey)
         .update(rawSignature)
         .digest('hex');
-
     // JSON object to send to MoMo endpoint
     const requestBody = JSON.stringify({
         partnerCode: partnerCode,
@@ -431,4 +432,105 @@ export const depositSuccess = async (req, res) => {
     await Order.create(formattedData);
 
     res.redirect('http://localhost:5173/order');
+}
+
+export const ZaloPay = async (req, res) => {
+    // APP INFO
+    const config = {
+        app_id: "2553",
+        key1: "PcY4iZIKFCIdgZvA6ueMcMHHUbRLYjPL",
+        key2: "kLtgPl8HHhfvMuDHPwKfgfsY4Ydm9eIz",
+        endpoint: "https://sb-openapi.zalopay.vn/v2/create",
+    };
+
+    const embed_data = {
+        "preferred_payment_method": [],
+        "redirecturl": "http://localhost:8088/api/zalopay_success",
+    }
+
+    const items = req.body.products;
+    const transID = Math.floor(Math.random() * 1000000);
+    const order = {
+        app_id: config.app_id,
+        app_trans_id: `${moment().format('YYMMDD')}_${transID}`, // translation missing: vi.docs.shared.sample_code.comments.app_trans_id
+        app_user: "user123",
+        app_time: Date.now(), // miliseconds
+        item: JSON.stringify(items),
+        embed_data: JSON.stringify(embed_data),
+        amount: 50000,
+        description: `Lazada - Payment for the order #${transID}`,
+        bank_code: "",
+        callback_url: "http://localhost:8088/api/zalopay_success",
+    };
+    // appid|app_trans_id|appuser|amount|apptime|embeddata|item
+    const data = config.app_id + "|" + order.app_trans_id + "|" + order.app_user + "|" + order.amount + "|" + order.app_time + "|" + order.embed_data + "|" + order.item;
+    order.mac = CryptoJS.HmacSHA256(data, config.key1).toString();
+    axios.post(config.endpoint, null, { params: order })
+        .then(response => {
+            const orderUrl = response.data.order_url;
+            console.log(orderUrl);
+            res.json({ order_url: orderUrl }); // Trả về phản hồi JSON với order_url
+        })
+        .catch(err => console.log(err));
+}
+export const ZaloRedirect = async (req, res) => {
+    const config = {
+        app_id: "2553",
+        key1: "PcY4iZIKFCIdgZvA6ueMcMHHUbRLYjPL",
+        key2: "kLtgPl8HHhfvMuDHPwKfgfsY4Ydm9eIz",
+    };
+    let data = req.query;
+    let checksumData = data.appid + '|' + data.apptransid + '|' + data.pmcid + '|' + data.bankcode + '|' + data.amount + '|' + data.discountamount + '|' + data.status;
+    let checksum = CryptoJS.HmacSHA256(checksumData, config.key2).toString();
+
+    if (checksum != data.checksum) {
+        res.sendStatus(400);
+    } else {
+        // kiểm tra xem đã nhận được callback hay chưa, nếu chưa thì tiến hành gọi API truy vấn trạng thái thanh toán của đơn hàng để lấy kết quả cuối cùng
+        res.sendStatus(200);
+    }
+}
+
+import stripe from 'stripe';
+const stripeInstance = stripe('sk_test_51O0bn3IY3g0rgNrbiw44N8Wfy9Xig0zXd8n4pvXVjDQOqXsWTb9vT4eH6eyoT5OSgNCMB8z1GbIlH8YmKSrb35s500DtTNT3Sh');
+export const Striper = async (req, res) => {
+    const {
+        userId,
+        couponId,
+        products,
+        total,
+        phone,
+        address
+    } = req.body;
+    const exchangeRateVNDToUSD = 0.000043; // Ví dụ: 1 VND = 0.000043 USD
+
+    const lineItems = products.map(product => ({
+        price_data: {
+            currency: 'usd',
+            product_data: {
+                name: product.product_name,
+                images: [product.image],
+            },
+            unit_amount: Math.floor(product.product_price * exchangeRateVNDToUSD * 100), // Chuyển đổi từ VND sang cent
+        },
+        quantity: product.stock_quantity,
+        description: `Color: ${product.colorId}, Material: ${product.materialId}, Size: ${product.sizeId}`,
+    }));
+    console.log(lineItems);
+    const session = await stripeInstance.checkout.sessions.create({
+        line_items: lineItems,
+        mode: 'payment',
+        success_url: 'http://localhost:8088/success',
+        cancel_url: 'http://localhost:8088/cancel',
+        metadata: {
+            userId,
+            couponId,
+            phone,
+            address,
+        },
+    });
+
+    res.status(200).json({
+        url: session.url
+    })
 }
