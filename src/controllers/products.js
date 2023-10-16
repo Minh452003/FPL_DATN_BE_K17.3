@@ -206,3 +206,37 @@ export const viewProduct = async (req, res) => {
         res.status(500).json({ error: 'Lỗi trong quá trình xử lý.' });
     }
 }
+export const getTopSellingProducts = async (req, res) => {
+    try {
+        const currentDate = new Date();
+        const currentYear = currentDate.getFullYear();
+        const currentMonth = currentDate.getMonth() + 1;
+        const currentQuarter = Math.ceil(currentMonth / 3); // Xác định quý
+
+        // Tìm kiếm các sản phẩm đã bán trong quý hiện tại
+        const query = {
+            $and: [
+                { $expr: { $eq: [{ $year: '$createdAt' }, currentYear] } },
+                { $expr: { $lte: [{ $month: '$createdAt' }, currentQuarter * 3] } },
+                { $expr: { $gte: [{ $month: '$createdAt' }, (currentQuarter - 1) * 3 + 1] } },
+            ],
+        };
+
+        const topSellingProducts = await Product.aggregate([
+            {
+                $match: query,
+            },
+            {
+                $sort: { sold_quantity: -1 },
+            },
+            {
+                $limit: 10, // Lấy top 5 sản phẩm
+            },
+        ]);
+
+        res.json(topSellingProducts);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Lỗi trong quá trình xử lý.' });
+    }
+};
