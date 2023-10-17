@@ -21,11 +21,9 @@ const authSchema = new mongoose.Schema({
     },
     phone: {
         type: String,
-        required: true,
     },
     address: {
         type: String,
-        required: true,
     },
     avatar: {
         type: Object
