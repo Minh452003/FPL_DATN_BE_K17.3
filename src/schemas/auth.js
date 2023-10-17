@@ -24,15 +24,8 @@ export const signupSchema = joi.object({
         "string.empty": "Mật khẩu không được để trống",
         "any.required": "Trường mật khẩu là bắt buộc",
     }),
-    phone: joi.string().max(12).required().messages({
-        "string.empty": "Mời điền số điện thoại",
-        "any.required": "bắt buộc thêm số điện thoại",
-        "string.max": "Số phải phải có ít hơn 12 số",
-    }),
-    address: joi.string().required().messages({
-        "string.empty": "Thêm địa chỉ ",
-        "any.required": 'Trường "Địa chỉ" là bắt buộc',
-    }),
+    phone: joi.string(),
+    address: joi.string(),
     avatar: joi.object()
 });
 
