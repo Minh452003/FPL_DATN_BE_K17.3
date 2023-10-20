@@ -12,7 +12,7 @@ export const getAll = async (req, res) => {
         },
     };
 
-    const searchQuery = q ? { name: { $regex: q, $options: "i" } } : {};
+    const searchQuery = q ? { product_name: { $regex: q, $options: "i" } } : {};
     try {
         const product = await Product.paginate(searchQuery, options);
         return res.status(200).json({
