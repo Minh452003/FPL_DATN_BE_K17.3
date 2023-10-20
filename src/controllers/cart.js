@@ -226,7 +226,7 @@ export const changeQuantity = async (req, res) => {
 export const removeProduct = async (req, res) => {
     try {
         const idUser = req.params.id
-        const { idProduct = '' } = req.query
+        const { idProduct = '', colorId = '', sizeId = '', materialId = '' } = req.query
         const userExist = await Auth.findOne({ _id: idUser })
         if (!userExist) {
             return res.status(404).json({
@@ -234,7 +234,12 @@ export const removeProduct = async (req, res) => {
             })
         }
         const cart = await Cart.findOne({ userId: idUser })
-        const productsUpdated = cart.products.filter((product) => product.productId !== idProduct)
+        const productsUpdated = cart.products.filter((product) =>
+            product.productId !== idProduct ||
+            product.colorId !== colorId ||
+            product.sizeId !== sizeId ||
+            product.materialId !== materialId
+        );
         const totalUpdated = productsUpdated.reduce((total, product) => {
             return (total += product.stock_quantity * product.product_price)
         }, 0)

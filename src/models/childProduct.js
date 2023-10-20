@@ -6,21 +6,9 @@ const childProductSchema = mongoose.Schema({
         ref: "Product",
         required: true
     },
-    product_name: {
-        type: String,
-        required: true,
-    },
     product_price: {
         type: Number,
         required: true
-    },
-    image: {
-        type: Object,
-        required: true
-    },
-    sold_quantity: {
-        type: Number,
-        default: 0
     },
     stock_quantity: {
         type: Number,
