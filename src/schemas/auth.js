@@ -45,6 +45,7 @@ export const signinSchema = joi.object({
 
 
 export const updateUserSchema = joi.object({
+    _id: joi.string(),
     first_name: joi.string().required().messages({
         "string.empty": "Vui lòng mời nhập tên",
         "any.required": 'Trường "Tên" là bắt buộc',
@@ -71,6 +72,7 @@ export const updateUserSchema = joi.object({
 
 
 export const changePasswordUserSchema = joi.object({
+    _id: joi.string(),
     currentPassword: joi.string().min(6).required().messages({
         "string.empty": "Mật khẩu hiện tại không được để trống",
         "any.required": "Trường mật khẩu hiện tại là bắt buộc",
@@ -85,6 +87,7 @@ export const changePasswordUserSchema = joi.object({
 
 
 export const resetPasswordUserSchema = joi.object({
+    _id: joi.string(),
     password: joi.string().min(6).required().messages({
         "string.empty": "Mật khẩu không được để trống",
         "any.required": "Trường mật khẩu là bắt buộc",

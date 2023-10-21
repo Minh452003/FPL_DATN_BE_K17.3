@@ -1,6 +1,7 @@
 import Joi from 'joi';
 
 export const CommentSchema = Joi.object({
+    _id: Joi.string(),
     userId: Joi.string().required().messages({
         'any.required': 'userId không được để trống.',
     }),
