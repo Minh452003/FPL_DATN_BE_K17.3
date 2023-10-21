@@ -43,7 +43,7 @@ export const getOrderById = async (req, res) => {
 
 export const getAllOrder = async (req, res) => {
     try {
-        const order = await Order.find().populate('products.productId status');
+        const order = await Order.find().populate('products.productId status userId');
         if (!order) {
             return res.status(404).json({
                 error: "Lấy tất cả đơn hàng thất bại"
