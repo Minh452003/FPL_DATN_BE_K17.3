@@ -24,7 +24,7 @@ export const getOrderByUserId = async (req, res) => {
 export const getOrderById = async (req, res) => {
     try {
         const id = req.params.id
-        const order = await Order.findById(id).populate('products.productId status')
+        const order = await Order.findById(id).populate('products.productId status userId couponId')
         if (!order || order.length === 0) {
             return res.status(404).json({
                 message: "Đơn hàng không tồn tại"
