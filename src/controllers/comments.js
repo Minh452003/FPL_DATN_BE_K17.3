@@ -23,6 +23,7 @@ export const getCommentFromProduct = async (req, res) => {
             productId: comment.productId,
             description: comment.description,
             formattedCreatedAt: comment.formattedCreatedAt,
+            rating: comment.rating
         }));
 
         return res.status(200).json({
