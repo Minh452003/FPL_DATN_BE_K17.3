@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const UserOtpVerificationSchema = new mongoose.Schema({
+const AuthOtpVerificationSchema = new mongoose.Schema({
     userId: {
         type: String
     },
@@ -15,4 +15,4 @@ const UserOtpVerificationSchema = new mongoose.Schema({
     }
 })
 
-export default mongoose.model("UserOTPVerification", UserOtpVerificationSchema)
+export default mongoose.model("AuthOTPVerification", AuthOtpVerificationSchema)

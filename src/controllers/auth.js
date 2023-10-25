@@ -7,7 +7,7 @@ import {
 } from "../schemas/auth.js";
 import jwt from "jsonwebtoken";
 import nodemailer from "nodemailer";
-import userOtpVerification from "../models/userOtpVerification.js";
+import AuthOTPVerification from "../models/authOtpVerification.js";
 let refreshTokens = [];
 
 // Lấy tất cả user
@@ -217,6 +217,66 @@ export const signup = async (req, res) => {
     }
 };
 
+// Đăng nhập
+export const signin = async (req, res) => {
+    try {
+        const { email, password } = req.body;
+
+        const { error } = signinSchema.validate(req.body, { abortEarly: false });
+        if (error) {
+            const errors = error.details.map((err) => err.message);
+            return res.status(400).json({
+                messages: errors,
+            });
+        }
+
+        const user = await Auth.findOne({ email });
+        if (!user) {
+            return res.status(404).json({
+                message: "Tài khoản không tồn tại",
+            });
+        }
+
+        const isVerify = await user.verified;
+        if (!isVerify) {
+            return res.status(400).json({
+                message: "Vui lòng xác minh tài khoản trước khi đăng nhập"
+            })
+        }
+
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+            return res.status(400).json({
+                message: "Mật khẩu không đúng",
+            });
+        }
+        if (user && password) {
+            const accessToken = generateAccessToken(user);
+            const refreshToken = generateRefreshToken(user);
+            refreshTokens.push(refreshToken);
+            // Lưu vào cookies
+            res.cookie("refreshToken", refreshToken, {
+                httpOnly: true,
+                secure: false,
+                path: "/",
+                // Ngăn chặn tấn công CSRF -> Những cái http, request chỉ được đến từ sameSite
+                sameSite: "strict",
+            });
+            const { password, ...users } = user._doc;
+            return res.status(200).json({
+                message: "Đăng nhập thành công",
+                ...users,
+                accessToken: accessToken,
+            });
+        }
+    } catch (error) {
+        return res.status(400).json({
+            message: error,
+        });
+    }
+};
+
+
 // Gửi OTP
 export const sendOTPVerificationEmail = async ({ _id, email }) => {
     try {
@@ -246,7 +306,7 @@ export const sendOTPVerificationEmail = async ({ _id, email }) => {
         const hashedOTP = await bcrypt.hash(otp, saltRounds);
 
         // Lưu OTP vào cơ sở dữ liệu
-        const newOTPVerification = new userOtpVerification({
+        const newOTPVerification = new AuthOTPVerification({
             userId: _id,
             otp: hashedOTP,
             createdAt: Date.now(),
@@ -288,7 +348,7 @@ export const sendNewOtp = async (req, res) => {
                 message: "Email không tồn tại"
             })
         } else {
-            await userOtpVerification.deleteMany({ userId });
+            await AuthOTPVerification.deleteMany({ userId });
             const otpResponse = await sendOTPVerificationEmail({
                 _id: userId,
                 email,
@@ -314,7 +374,7 @@ export const verifyOTP = async (req, res) => {
                 message: "Không được để trống mã otp và userId",
             });
         } else {
-            const UserOTPVerificationRecords = await userOtpVerification.find({
+            const UserOTPVerificationRecords = await AuthOTPVerification.find({
                 userId
             });
             if (UserOTPVerificationRecords.length <= 0) {
@@ -327,7 +387,7 @@ export const verifyOTP = async (req, res) => {
                 const hashedOTP = UserOTPVerificationRecords[0].otp;
 
                 if (expiresAt < Date.now()) {
-                    await userOtpVerification.deleteMany({ userId });
+                    await AuthOTPVerification.deleteMany({ userId });
                     return res.status(400).json({
                         message: "Mã đã hết hạn. Vui lòng yêu cầu lại",
                     });
@@ -341,7 +401,7 @@ export const verifyOTP = async (req, res) => {
                         // Thành công
                         await sendVerificationEmail(userId);
                         await Auth.updateOne({ _id: userId }, { verified: true });
-                        await userOtpVerification.deleteMany({ userId });
+                        await AuthOTPVerification.deleteMany({ userId });
 
                         return res.status(200).json({
                             message: "Xác minh email của người dùng thành công!"
@@ -420,64 +480,6 @@ export const generateRefreshToken = (user) => {
     );
 };
 
-// Đăng nhập
-export const signin = async (req, res) => {
-    try {
-        const { email, password } = req.body;
-
-        const { error } = signinSchema.validate(req.body, { abortEarly: false });
-        if (error) {
-            const errors = error.details.map((err) => err.message);
-            return res.status(400).json({
-                messages: errors,
-            });
-        }
-
-        const user = await Auth.findOne({ email });
-        if (!user) {
-            return res.status(404).json({
-                message: "Tài khoản không tồn tại",
-            });
-        }
-
-        const isVerify = await user.verified;
-        if (!isVerify) {
-            return res.status(400).json({
-                message: "Vui lòng xác minh tài khoản trước khi đăng nhập"
-            })
-        }
-
-        const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) {
-            return res.status(400).json({
-                message: "Mật khẩu không đúng",
-            });
-        }
-        if (user && password) {
-            const accessToken = generateAccessToken(user);
-            const refreshToken = generateRefreshToken(user);
-            refreshTokens.push(refreshToken);
-            // Lưu vào cookies
-            res.cookie("refreshToken", refreshToken, {
-                httpOnly: true,
-                secure: false,
-                path: "/",
-                // Ngăn chặn tấn công CSRF -> Những cái http, request chỉ được đến từ sameSite
-                sameSite: "strict",
-            });
-            const { password, ...users } = user._doc;
-            return res.status(200).json({
-                message: "Đăng nhập thành công",
-                ...users,
-                accessToken: accessToken,
-            });
-        }
-    } catch (error) {
-        return res.status(400).json({
-            message: error,
-        });
-    }
-};
 
 // Đăng xuất
 export const logout = async (req, res) => {

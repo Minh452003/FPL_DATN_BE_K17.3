@@ -11,7 +11,7 @@ const productsSchema = mongoose.Schema({
         required: true
     },
     image: {
-        type: Object,
+        type: Array,
         required: true
     },
     sold_quantity: {
