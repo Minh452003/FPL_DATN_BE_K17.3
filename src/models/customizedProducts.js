@@ -21,24 +21,16 @@ const CustomizedProductSchema = mongoose.Schema({
         required: true
     },
     image: {
-        type: Object,
+        type: Array,
         required: true
     },
     stock_quantity: {
         type: Number,
         required: true
     },
-    description: {
-        type: String,
-        required: true
-    },
     categoryId: {
         type: mongoose.Types.ObjectId,
         ref: "Category",
-    },
-    brandId: {
-        type: mongoose.Types.ObjectId,
-        ref: "Brand",
     },
     colorId: {
         type: mongoose.Types.ObjectId,
