@@ -4,7 +4,7 @@ const routerCustomizedProduct = express.Router();
 
 routerCustomizedProduct.get("/customized-products/:userId", listCustomizedProducts);
 routerCustomizedProduct.get("/customized-products/delete/:userId", getAllDelete);
-routerCustomizedProduct.get("/customized-products/:id", get);
+routerCustomizedProduct.get("/customized-products/id/:id", get);
 routerCustomizedProduct.delete("/customized-products/:id", remove);
 routerCustomizedProduct.delete("/products/force/:id", removeForce);
 routerCustomizedProduct.post("/customized-products", createCustomizedProduct);

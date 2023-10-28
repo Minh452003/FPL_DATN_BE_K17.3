@@ -8,6 +8,8 @@ import ChildProduct from "../models/childProduct.js";
 import CryptoJS from "crypto-js";
 import axios from 'axios';
 import moment from 'moment';
+import Cart from '../models/cart.js'
+
 export const PayMomo = (req, res) => {
     const accessKey = 'F8BBA842ECF85';
     const secretKey = 'K951B6PE1waDMi640xX08PD3vg6EkVlz';
@@ -123,7 +125,6 @@ export const MomoSuccess = async (req, res) => {
             data[key] = decodeURIComponent(value);
         }
     });
-
     // Bây giờ bạn có thể truy cập các giá trị từ đối tượng data
     const userId = data.userId;
     const couponId = data.couponId;
@@ -145,6 +146,10 @@ export const MomoSuccess = async (req, res) => {
         paymentCode,
         payerId
     };
+    if (formattedData.couponId === 'null') {
+        // Chuyển chuỗi "null" thành giá trị null
+        formattedData.couponId = null;
+    }
     // Kiểm tra xem có phiếu giảm giá được sử dụng trong đơn hàng không
     if (formattedData.couponId !== null) {
         // Tăng số lượng phiếu giảm giá đã sử dụng lên 1
@@ -172,6 +177,12 @@ export const MomoSuccess = async (req, res) => {
         }
     }
     await Order.create(formattedData);
+
+    const cartExist = await Cart.findOne({ userId });
+    cartExist.products = []; // Xoá tất cả sản phẩm trong giỏ hàng
+    cartExist.total = 0;// Đặt tổng giá trị về 0
+    cartExist.couponId = null
+    await cartExist.save();
 
     res.redirect('http://localhost:5173/order');
 }
@@ -492,6 +503,7 @@ export const ZaloRedirect = async (req, res) => {
 }
 
 import stripe from 'stripe';
+import { log } from 'console';
 const stripeInstance = stripe('sk_test_51O0bn3IY3g0rgNrbiw44N8Wfy9Xig0zXd8n4pvXVjDQOqXsWTb9vT4eH6eyoT5OSgNCMB8z1GbIlH8YmKSrb35s500DtTNT3Sh');
 export const Striper = async (req, res) => {
     const {
