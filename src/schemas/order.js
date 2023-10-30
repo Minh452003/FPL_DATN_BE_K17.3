@@ -12,6 +12,7 @@ export const orderSchema = Joi.object({
         "number.min": "Không được nhập số âm"
     }),
     deposit: Joi.number(),
+    shipping: Joi.number(),
     status: Joi.string(),
     phone: Joi.string().max(10).required().messages({
         "string.empty": "Mời điền số điện thoại",

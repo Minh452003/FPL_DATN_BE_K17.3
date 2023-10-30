@@ -28,7 +28,9 @@ export const PayMomo = (req, res) => {
     const status = req.body.status;
     const phone = req.body.phone;
     const address = req.body.address;
-    const extraData = `userId=${userId}&couponId=${couponId}&phone=${phone}&address=${address}&products=${JSON.stringify(products)}`;
+    const shipping = req.body.shipping;
+    const notes = req.body.notes;
+    const extraData = `userId=${userId}&shipping=${shipping}&couponId=${couponId}&phone=${phone}&address=${address}&notes=${notes}&products=${JSON.stringify(products)}`;
     const orderGroupId = '';
     const autoCapture = true;
     const lang = 'vi';
@@ -61,7 +63,9 @@ export const PayMomo = (req, res) => {
         products: products,
         status: status,
         phone: phone,
-        address: address
+        address: address,
+        shipping: shipping,
+        notes: notes
     });
 
     // HTTPS request options
@@ -127,12 +131,12 @@ export const MomoSuccess = async (req, res) => {
     });
     // Bây giờ bạn có thể truy cập các giá trị từ đối tượng data
     const userId = data.userId;
+    const shipping = data.shipping;
     const couponId = data.couponId;
     const phone = data.phone;
     const address = data.address;
+    const notes = data.notes;
     const products = data.products;
-
-
 
     // Xử lý dữ liệu theo cách bạn muốn ở đây
     const formattedData = {
@@ -140,12 +144,18 @@ export const MomoSuccess = async (req, res) => {
         couponId,
         products: products,
         total: Number(total),
+        shipping: Number(shipping),
         phone,
         address,
+        notes,
         paymentId,
         paymentCode,
         payerId
     };
+    if (formattedData.notes === 'undefined') {
+        // Chuyển chuỗi "null" thành giá trị null
+        formattedData.notes = undefined;
+    }
     if (formattedData.couponId === 'null') {
         // Chuyển chuỗi "null" thành giá trị null
         formattedData.couponId = null;
@@ -187,8 +197,6 @@ export const MomoSuccess = async (req, res) => {
     res.redirect('http://localhost:5173/order');
 }
 
-
-
 // 
 paypal.configure({
     'mode': 'sandbox', //sandbox or live
@@ -197,8 +205,9 @@ paypal.configure({
 });
 
 export const PayPal = (req, res) => {
-    const { products, userId, couponId, phone, address } = req.body
+    const { products, userId, couponId, phone, address, notes, shipping } = req.body
     const exchangeRate = 1 / 24057;
+    const shippingFee = Number((shipping * exchangeRate).toFixed(2));
     const transformedProducts = products.map(product => {
         const classOption = `Price=${product.product_price}&&Color=${product.colorId}&&Size=${product.sizeId}&&Material=${product.materialId}`;
         const priceUsd = (product.product_price * exchangeRate).toFixed(2);
@@ -231,14 +240,20 @@ export const PayPal = (req, res) => {
                 },
                 amount: {
                     currency: 'USD',
-                    total: totalMoney.toString(),
+                    total: (totalMoney + shippingFee).toFixed(2).toString(),
+                    details: {
+                        subtotal: totalMoney.toString(),
+                        shipping: shippingFee.toString(), // Định nghĩa phí vận chuyển
+                    },
                 },
-                description: 'Hat for the best team ever',
+                description: notes,
                 custom: JSON.stringify({
                     phone: phone,
                     address: address,
                     userId: userId,
-                    couponId: couponId
+                    couponId: couponId,
+                    shipping: shipping,
+                    notes: notes
                 }),
             },
         ],
@@ -272,10 +287,8 @@ export const PayPalSuccess = (req, res) => {
             // Xử lý lỗi ở đây nếu cần
         } else {
             // Truy cập thông tin giao dịch từ đối tượng payment
-            // const paidAmount = Math.floor(parseFloat(payment.transactions[0].amount.total * 24057));
             const productList = payment.transactions[0].item_list.items.map(item => {
                 const classOption = item.description.split('&&'); // Tách thông tin theo dấu &&
-
                 // Khởi tạo các biến để lưu thông tin
                 let color = '';
                 let size = '';
@@ -312,18 +325,26 @@ export const PayPalSuccess = (req, res) => {
             const phone = customData.phone;
             const address = customData.address;
             const userId = customData.userId;
-            const couponId = customData.couponId
+            const couponId = customData.couponId;
+            const shipping = customData.shipping;
+            const notes = customData.notes
             const totalMoney = productList.reduce((acc, product) => {
                 return acc + (product.product_price * product.stock_quantity);
             }, 0);
+            if (couponId === 'null') {
+                // Chuyển chuỗi "null" thành giá trị null
+                couponId = null;
+            }
             // Tạo đối tượng có định dạng bạn mong muốn
             const formattedData = {
                 products: productList,
-                total: totalMoney,
+                total: totalMoney + shipping,
+                shipping: shipping,
                 phone,
                 address,
                 userId,
                 couponId,
+                notes,
                 paymentId,
                 paymentCode: token,
                 payerId
@@ -357,6 +378,11 @@ export const PayPalSuccess = (req, res) => {
                     await product.save();
                 }
             }
+            const cartExist = await Cart.findOne({ userId });
+            cartExist.products = []; // Xoá tất cả sản phẩm trong giỏ hàng
+            cartExist.total = 0;// Đặt tổng giá trị về 0
+            cartExist.couponId = null
+            await cartExist.save();
             await Order.create(formattedData);
             res.redirect('http://localhost:5173/order'); // Thay đổi '/other-page' thành URL của trang khác
         }
