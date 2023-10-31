@@ -26,5 +26,6 @@ export const orderSchema = Joi.object({
     notes: Joi.string(),
     paymentId: Joi.string(),
     paymentCode: Joi.string(),
-    payerId: Joi.string()
+    payerId: Joi.string(),
+    type: Joi.string()
 })
