@@ -5,6 +5,7 @@ import Product from "../models/products.js";
 import ChildProduct from "../models/childProduct.js";
 const { createHmac } = await import('node:crypto');
 import { request } from 'https';
+import paypal from 'paypal-rest-sdk'
 
 export const getOrderByUserId = async (req, res) => {
     try {
@@ -93,6 +94,12 @@ export const removeOrder = async (req, res) => {
     }
 }
 
+paypal.configure({
+    'mode': 'sandbox', //sandbox or live
+    'client_id': 'AQyc1P8zTxcYbL9RgIIeJDyrClQl8pCATFKLf9o-BW5FqkisSdtBMlblVOg611WhgQg429hx6JUnjdeE',
+    'client_secret': 'ENYh-J6nt272nE7bQ_nWtAUijIwvlt0Yf9IYU2-Y6vDBT6lZYYw6-xNMSqt9vISwLlPC6vHs-_T6s3dx'
+});
+
 export const createOrder = async (req, res) => {
     try {
         const body = req.body;
@@ -104,93 +111,170 @@ export const createOrder = async (req, res) => {
             })
         }
         if (body.total > 5000000) {
-            const accessKey = 'F8BBA842ECF85';
-            const secretKey = 'K951B6PE1waDMi640xX08PD3vg6EkVlz';
-            const orderInfo = 'CỌC ĐƠN HÀNG MOMO';
-            const partnerCode = 'MOMO';
-            const redirectUrl = 'http://localhost:8088/api/momo-deposit';
-            const ipnUrl = 'http://localhost:8088/api/momo-deposit';
-            const requestType = "payWithMethod";
-            const amount = req.body.total * 0.2;
-            const orderId = partnerCode + new Date().getTime();
-            const requestId = orderId;
-            // Bổ sung
-            const total = req.body.total - amount;
-            const userId = req.body.userId;
-            const couponId = req.body.couponId;
-            const products = req.body.products;
-            const status = req.body.status;
-            const phone = req.body.phone;
-            const address = req.body.address;
-            const extraData = `total=${total}&userId=${userId}&couponId=${couponId}&phone=${phone}&address=${address}&products=${JSON.stringify(products)}`;
-            const orderGroupId = '';
-            const autoCapture = true;
-            const lang = 'vi';
-            // Create raw signature
-            const rawSignature = `accessKey=${accessKey}&amount=${amount}&extraData=${extraData}&ipnUrl=${ipnUrl}&orderId=${orderId}&orderInfo=${orderInfo}&partnerCode=${partnerCode}&redirectUrl=${redirectUrl}&requestId=${requestId}&requestType=${requestType}`;
-            // Generate signature
-            const signature = createHmac('sha256', secretKey)
-                .update(rawSignature)
-                .digest('hex');
-
-            // JSON object to send to MoMo endpoint
-            const requestBody = JSON.stringify({
-                partnerCode: partnerCode,
-                partnerName: "Test",
-                storeId: "MomoTestStore",
-                requestId: requestId,
-                amount: amount,
-                orderId: orderId,
-                orderInfo: orderInfo,
-                redirectUrl: redirectUrl,
-                ipnUrl: ipnUrl,
-                lang: lang,
-                requestType: requestType,
-                autoCapture: autoCapture,
-                extraData: extraData,
-                orderGroupId: orderGroupId,
-                signature: signature,
-                // 
-                total: total,
-                userId: userId,
-                couponId: couponId,
-                products: products,
-                status: status,
-                phone: phone,
-                address: address
-            });
-
-            // HTTPS request options
-            const options = {
-                hostname: 'test-payment.momo.vn',
-                port: 443,
-                path: '/v2/gateway/api/create',
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Content-Length': Buffer.byteLength(requestBody)
-                },
-            };
-
-            // Send the request and get the response
-            const momoRequest = request(options, momoResponse => {
-                momoResponse.setEncoding('utf8');
-                momoResponse.on('data', body => {
-                    res.json({ payUrl: JSON.parse(body).payUrl });
+            if (body.total > 5000000 && body.type == 'momo') {
+                const accessKey = 'F8BBA842ECF85';
+                const secretKey = 'K951B6PE1waDMi640xX08PD3vg6EkVlz';
+                const orderInfo = 'CỌC ĐƠN HÀNG MOMO';
+                const partnerCode = 'MOMO';
+                const redirectUrl = 'http://localhost:8088/api/momo-deposit';
+                const ipnUrl = 'http://localhost:8088/api/momo-deposit';
+                const requestType = "payWithMethod";
+                const amount = Math.floor((req.body.total + req.body.shipping) * 0.2);
+                console.log(amount);
+                const orderId = partnerCode + new Date().getTime();
+                const requestId = orderId;
+                // Bổ sung
+                const total = (req.body.total + req.body.shipping) - amount;
+                console.log(total);
+                const userId = req.body.userId;
+                const couponId = req.body.couponId;
+                const products = req.body.products;
+                const status = req.body.status;
+                const phone = req.body.phone;
+                const address = req.body.address;
+                const shipping = Math.floor((req.body.shipping - (req.body.shipping * 0.2)));
+                console.log(shipping);
+                const notes = req.body.notes;
+                const extraData = `total=${total}&shipping=${shipping}&userId=${userId}&couponId=${couponId}&phone=${phone}&address=${address}&products=${JSON.stringify(products)}`;
+                const orderGroupId = '';
+                const autoCapture = true;
+                const lang = 'vi';
+                // Create raw signature
+                const rawSignature = `accessKey=${accessKey}&amount=${amount}&extraData=${extraData}&ipnUrl=${ipnUrl}&orderId=${orderId}&orderInfo=${orderInfo}&partnerCode=${partnerCode}&redirectUrl=${redirectUrl}&requestId=${requestId}&requestType=${requestType}`;
+                // Generate signature
+                const signature = createHmac('sha256', secretKey)
+                    .update(rawSignature)
+                    .digest('hex');
+                // JSON object to send to MoMo endpoint
+                const requestBody = JSON.stringify({
+                    partnerCode: partnerCode,
+                    partnerName: "Test",
+                    storeId: "MomoTestStore",
+                    requestId: requestId,
+                    amount: amount,
+                    orderId: orderId,
+                    orderInfo: orderInfo,
+                    redirectUrl: redirectUrl,
+                    ipnUrl: ipnUrl,
+                    lang: lang,
+                    requestType: requestType,
+                    autoCapture: autoCapture,
+                    extraData: extraData,
+                    orderGroupId: orderGroupId,
+                    signature: signature,
+                    // 
+                    total: total,
+                    userId: userId,
+                    couponId: couponId,
+                    products: products,
+                    status: status,
+                    phone: phone,
+                    address: address,
+                    shipping: shipping,
+                    notes: notes
                 });
-                momoResponse.on('end', () => {
-                    console.log('No more data in response.');
-                });
-            });
-            momoRequest.on('error', error => {
-                console.log(`Problem with request: ${error.message}`);
-                res.status(500).json({ error: 'Internal Server Error' });
-            });
 
-            // Write data to request body
-            console.log("Sending....");
-            momoRequest.write(requestBody);
-            momoRequest.end();
+                // HTTPS request options
+                const options = {
+                    hostname: 'test-payment.momo.vn',
+                    port: 443,
+                    path: '/v2/gateway/api/create',
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Content-Length': Buffer.byteLength(requestBody)
+                    },
+                };
+
+                // Send the request and get the response
+                const momoRequest = request(options, momoResponse => {
+                    momoResponse.setEncoding('utf8');
+                    momoResponse.on('data', body => {
+                        res.json({ payUrl: JSON.parse(body).payUrl });
+                    });
+                    momoResponse.on('end', () => {
+                        console.log('No more data in response.');
+                    });
+                });
+                momoRequest.on('error', error => {
+                    console.log(`Problem with request: ${error.message}`);
+                    res.status(500).json({ error: 'Internal Server Error' });
+                });
+
+                // Write data to request body
+                console.log("Sending....");
+                momoRequest.write(requestBody);
+                momoRequest.end();
+            } else if (body.total > 5000000 && body.type == 'paypal') {
+                const { products, userId, couponId, phone, address, notes, shipping, total } = req.body
+                const exchangeRate = 1 / 24565;
+                const shippingFee = Number(((shipping * 0.2) * exchangeRate).toFixed(2));
+                const transformedProducts = products.map(product => {
+                    const classOption = `Price=${product.product_price}&&Color=${product.colorId}&&Size=${product.sizeId}&&Material=${product.materialId}`;
+                    const priceUsd = ((product.product_price * 0.2) * exchangeRate).toFixed(2);
+                    return {
+                        sku: product.productId,
+                        name: product.product_name,
+                        quantity: product.stock_quantity,
+                        image_url: product.image,
+                        description: classOption,
+                        price: priceUsd,
+                        currency: 'USD',
+                    };
+                });
+                const totalMoney = transformedProducts.reduce((acc, product) => {
+                    return acc + (product.price * product.quantity);
+                }, 0);
+                const create_payment_json = {
+                    intent: 'sale',
+                    payer: {
+                        payment_method: 'paypal',
+                    },
+                    redirect_urls: {
+                        return_url: `http://localhost:8088/api/paypal_deposit`,
+                        cancel_url: `http://localhost:5173/carts`,
+                    },
+                    transactions: [
+                        {
+                            item_list: {
+                                items: transformedProducts,
+                            },
+                            amount: {
+                                currency: 'USD',
+                                total: (totalMoney + shippingFee).toFixed(2).toString(),
+                                details: {
+                                    subtotal: totalMoney.toFixed(2).toString(),
+                                    shipping: shippingFee.toFixed(2).toString(), // Định nghĩa phí vận chuyển
+                                },
+                            },
+                            description: notes,
+                            custom: JSON.stringify({
+                                phone: phone,
+                                address: address,
+                                userId: userId,
+                                couponId: couponId,
+                                shipping: shipping,
+                                total: total,
+                                notes: notes
+                            }),
+                        },
+                    ],
+                };
+                paypal.payment.create(create_payment_json, function (error, payment) {
+                    if (error) {
+                        res.status(400).json(error)
+                    } else {
+                        for (let i = 0; i < payment.links.length; i++) {
+                            if (payment.links[i].rel === 'approval_url') {
+                                // Trả về đường link dưới dạng JSON response
+                                res.json({ approval_url: payment.links[i].href });
+                                return; // Dừng hàm và kết thúc response
+                            }
+                        }
+                    }
+                });
+            }
+
         } else {
             // Kiểm tra xem có phiếu giảm giá được sử dụng trong đơn hàng không
             if (body.couponId !== null) {
