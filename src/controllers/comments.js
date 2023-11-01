@@ -9,7 +9,7 @@ export const getCommentFromProduct = async (req, res) => {
         const { productId } = req.params;
         const comments = await Comment.find({ productId: productId }).populate({
             path: 'userId',
-            select: 'last_name email avatar',
+            select: 'first_name email avatar',
         });
         if (!comments || comments.length === 0) {
             return res.status(404).json({
@@ -62,16 +62,37 @@ export const getOneComment = async (req, res) => {
 
 export const getAllComment = async (req, res) => {
     try {
-        const comments = await Comment.find().populate({
-            path: 'productId',
-            select: 'name',
-        }).populate({
-            path: 'userId',
-            select: 'name email image',
-        });
+        const products = await Comment.aggregate([
+            {
+                $group: {
+                    _id: '$productId',
+                    count: { $sum: 1 }, // Đếm số lượng bình luận cho mỗi sản phẩm
+                },
+            },
+            {
+                $lookup: {
+                    from: 'products', // Tên của bảng sản phẩm
+                    localField: '_id',
+                    foreignField: '_id',
+                    as: 'productInfo',
+                },
+            },
+            {
+                $unwind: '$productInfo',
+            },
+            {
+                $project: {
+                    _id: '$productInfo._id',
+                    product_name: '$productInfo.product_name',
+                    ratings_count: '$productInfo.ratings_count',
+                    comments_count: '$count',
+                },
+            },
+        ]);
+
         return res.status(200).json({
-            message: 'Lấy tất cả bình luận thành công',
-            comments,
+            message: 'Lấy tất cả sản phẩm đã được đánh giá và số lượng đánh giá thành công',
+            products,
         });
     } catch (error) {
         res.status(400).json({
