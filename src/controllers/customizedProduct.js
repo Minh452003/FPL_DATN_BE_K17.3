@@ -27,6 +27,24 @@ export const createCustomizedProduct = async (req, res) => {
         return res.status(500).json({ message: 'Đã xảy ra lỗi khi tạo sản phẩm tự thiết kế.', error });
     }
 };
+export const getAllCustomProduct = async (req, res) => {
+    try {
+        const customProduct = await CustomizedProduct.find();
+        if (customProduct.length === 0) {
+            return res.status(404).json({
+                message: 'Lấy tất cả san pham tu thiet ke thất bại',
+            });
+        }
+        return res.status(200).json({
+            message: " Lấy tất cả san pham tu thiet ke thành công",
+            customProduct
+        });
+    } catch (error) {
+        return res.status(400).json({
+            message: error.message,
+        });
+    }
+};
 
 export const listCustomizedProducts = async (req, res) => {
     try {
