@@ -2,8 +2,8 @@ import express from "express";
 import { createCustomizedProduct, get, getAllCustomProduct, getAllDelete, listCustomizedProducts, remove, removeForce, restoreProduct, updateProduct } from "../controllers/customizedProduct.js";
 const routerCustomizedProduct = express.Router();
 
-routerCustomizedProduct.get("/customized-products-list",getAllCustomProduct);
-routerCustomizedProduct.get("/CustomProducts/delete",getAllDelete)
+routerCustomizedProduct.get("/customized-products-list", getAllCustomProduct);
+routerCustomizedProduct.get("/CustomProducts/delete/:userId", getAllDelete)
 routerCustomizedProduct.get("/customized-products/:userId", listCustomizedProducts);
 routerCustomizedProduct.get("/customized-products/delete/:userId", getAllDelete);
 routerCustomizedProduct.get("/customized-products/id/:id", get);
