@@ -60,15 +60,10 @@ export const updateUserSchema = joi.object({
         "any.required": 'Trường "Email" là bắt buộc',
         "string.email": "Email không đúng định dạng",
     }),
-    phone: joi.string().max(10).required().messages({
-        "string.empty": "Mời điền số điện thoại",
-        "any.required": "bắt buộc thêm số điện thoại",
-        "string.max": "Số phải phải có ít hơn 10 số",
-    }),
-    address: joi.string().required().messages({
-        "string.empty": "Thêm địa chỉ ",
-        "any.required": 'Trường "Địa chỉ" là bắt buộc',
-    })
+    phone: joi.string().max(10),
+    address: joi.string(),
+    avatar: joi.object()
+
 });
 
 // Quên mật khẩu người dùng : 

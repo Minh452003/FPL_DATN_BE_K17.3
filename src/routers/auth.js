@@ -11,7 +11,7 @@ routerAuth.get("/users/:id", getOneById);
 routerAuth.delete("/user/:id/admin", authenticate, authorization, removebyAdmin);
 routerAuth.delete("/users/:id", authenticate, authorization, removebyUser);
 routerAuth.patch("/user/:id/admin", authenticate, authorization, updateUserByAdmin);
-routerAuth.patch("/users/:id", authenticate, authorization, updateUser);
+routerAuth.patch("/users/:id", authenticate, updateUser);
 routerAuth.post("/signup", signup);
 routerAuth.post("/signin", signin);
 routerAuth.post("/logout", authenticate, logout);
