@@ -66,11 +66,29 @@ export const listCustomizedProducts = async (req, res) => {
     }
 };
 
-export const getAllDelete = async (req, res) => {
+export const getAllDeleteById = async (req, res) => {
     try {
         const userId = req.params.userId;
         const product = await CustomizedProduct.findWithDeleted({ userId, deleted: true });
 
+        return res.status(200).json({
+            message: "Lấy tất cả sản phẩm tự thiết kế đã bị xóa",
+            product
+        });
+    } catch (error) {
+        return res.status(400).json({
+            message: error,
+        })
+    }
+};
+export const getAllDelete = async (req, res) => {
+    try {
+        const product = await CustomizedProduct.findWithDeleted({deleted: true });
+        if(!product){
+            return res.status(201).json({
+                message: "không có sản phẩm thiết kế nào được xóa"
+            });
+        }
         return res.status(200).json({
             message: "Lấy tất cả sản phẩm tự thiết kế đã bị xóa",
             product
