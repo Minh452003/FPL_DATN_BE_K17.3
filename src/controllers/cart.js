@@ -183,44 +183,71 @@ export const getOne = async (req, res) => {
 
 export const changeQuantity = async (req, res) => {
     try {
-        const idUser = req.params.id
-        const { idProduct = '' } = req.query
-        const { stock_quantity } = req.body
-        const userExist = await Auth.findOne({ _id: idUser })
+        const idUser = req.params.id;
+        const { productId, sizeId, colorId, materialId } = req.query;
+        const { stock_quantity } = req.body;
+
+        const userExist = await Auth.findOne({ _id: idUser });
         if (!userExist) {
             return res.status(404).json({
                 message: 'Vui lòng đăng nhập!'
-            })
+            });
         }
-        const cart = await Cart.findOne({ userId: idUser })
-        const productExt = cart.products.find((product) => product.productId === idProduct)
+
+        const cart = await Cart.findOne({ userId: idUser });
+
+        // Tìm sản phẩm trong giỏ hàng dựa trên productId, sizeId, colorId, và materialId
+        const productExt = cart.products.find((product) =>
+            product.productId === productId &&
+            product.sizeId === sizeId &&
+            product.colorId === colorId &&
+            product.materialId === materialId
+        );
+
         if (productExt) {
-            productExt.stock_quantity = stock_quantity
-            const productsUpdated = [...cart.products.filter((product) => product.productId !== idProduct), productExt]
+            productExt.stock_quantity = stock_quantity;
+
+            // Cập nhật danh sách sản phẩm trong giỏ hàng
+            const productsUpdated = cart.products.map((product) => ({
+                productId: product.productId,
+                product_name: product.product_name,
+                product_price: product.product_price,
+                image: product.image,
+                stock_quantity: product.stock_quantity,
+                sizeId: product.sizeId,
+                colorId: product.colorId,
+                materialId: product.materialId,
+                _id: product._id // Lưu ý: _id là trường ID được Mongoose tạo
+            }));
+            // Tính lại tổng giá
             const totalUpdated = productsUpdated.reduce((total, product) => {
-                return (total += product.stock_quantity * product.product_price)
-            }, 0)
+                return (total += product.stock_quantity * product.product_price);
+            }, 0);
+
+            // Cập nhật giỏ hàng và lưu vào cơ sở dữ liệu
             const cartUpdated = await Cart.findOneAndUpdate(
                 { userId: idUser },
                 { $set: { products: productsUpdated, total: totalUpdated } },
                 { new: true }
-            )
+            );
 
             return res.status(200).json({
                 message: 'Thay đổi sản phẩm thành công',
                 data: cartUpdated
-            })
+            });
         }
+
         return res.status(400).json({
             message: 'Sản phẩm không tồn tại!',
             data: {}
-        })
+        });
     } catch (error) {
         return res.status(400).json({
             message: error.message
-        })
+        });
     }
 }
+
 
 
 export const removeProduct = async (req, res) => {
@@ -344,11 +371,10 @@ export const applyCoupon = async (req, res) => {
             return res.status(404).json({ message: 'Mã phiếu giảm giá không hợp lệ' });
         }
         // check xem người dùng đã sử dụng phiếu giảm giá này để order hay chưa
-        const orderWithCoupon = await Order.findOne({ couponId: couponId });
+        const orderWithCoupon = await Order.findOne({ userId: userId, couponId: couponId });
         if (orderWithCoupon) {
             return res.status(400).json({ message: 'Phiếu giảm giá đã được sử dụng' });
         }
-
         // Kiểm tra xem phiếu giảm giá có quá hạn không
         const currentDate = new Date();
         if (currentDate > coupon.expiration_date) {

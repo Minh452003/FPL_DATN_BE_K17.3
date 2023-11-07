@@ -39,6 +39,7 @@ export const getRevenueAndProfit = async (req, res) => {
                 $group: {
                     _id: {
                         year: '$year',
+                        month: '$month'
                     },
                     total: { $sum: '$total' },
                     profit: { $sum: { $multiply: ['$total', 0.25] } }, // Tính lợi nhuận (25%)
@@ -48,13 +49,14 @@ export const getRevenueAndProfit = async (req, res) => {
                 $project: {
                     _id: 0,
                     year: '$_id.year',
+                    month: '$_id.month',
                     total: 1,
                     profit: 1,
                 },
             },
             {
                 $sort: {
-                    year: 1,
+                    month: 1
                 },
             },
         ]);
@@ -222,8 +224,138 @@ export const getTotalSoldQuantity = async (req, res) => {
         res.status(500).json({ error: 'Lỗi trong quá trình xử lý.' });
     }
 }
+export const getTotalCreatedProducts = async (req, res) => {
+    try {
+        const { year, month } = req.query;
+        const aggregationStages = [];
 
+        if (year) {
+            aggregationStages.push({
+                $match: {
+                    createdAt: {
+                        $gte: new Date(parseInt(year), 0, 1),
+                        $lt: new Date(parseInt(year) + 1, 0, 1),
+                    },
+                },
+            });
 
+            if (month) {
+                aggregationStages[0].$match.createdAt = {
+                    $gte: new Date(parseInt(year), parseInt(month) - 1, 1),
+                    $lt: new Date(parseInt(year), parseInt(month), 1),
+                };
+            }
+        } else {
+            return res.status(400).json({ error: 'Thiếu thông tin năm trong yêu cầu.' });
+        }
+
+        const groupFields = { year: { $year: '$createdAt' } };
+        if (month) {
+            groupFields.month = { $month: '$createdAt' };
+        }
+
+        const result = await Product.aggregate([
+            ...aggregationStages,
+            {
+                $group: {
+                    _id: groupFields,
+                    count: { $sum: 1 },
+                },
+            },
+        ]);
+
+        res.json(result);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Lỗi trong quá trình xử lý.' });
+    }
+}
+export const getSellingProductsData = async (req, res) => {
+    try {
+        const { year, month } = req.query;
+        let query = {};
+
+        if (year && month) {
+            query = {
+                $and: [
+                    { $expr: { $eq: [{ $year: '$createdAt' }, parseInt(year)] } },
+                    { $expr: { $eq: [{ $month: '$createdAt' }, parseInt(month)] } }
+                ]
+            };
+        } else if (year) {
+            query = { $expr: { $eq: [{ $year: '$createdAt' }, parseInt(year)] } };
+        } else if (month) {
+            return res.status(400).json({ error: 'Thiếu thông tin năm trong yêu cầu.' });
+        } else {
+            return res.status(400).json({ error: 'Thiếu thông tin tháng hoặc năm trong yêu cầu.' });
+        }
+
+        // Sử dụng aggregation framework để tính số lượng sản phẩm đã bán cho mỗi sản phẩm
+        const sellingProductsData = await Product.aggregate([
+            {
+                $match: query,
+            },
+            {
+                $group: {
+                    _id: '$product_name', // Gom nhóm theo tên sản phẩm
+                    totalSold: { $sum: '$sold_quantity' } // Tính tổng số sản phẩm đã bán
+                }
+            }
+        ]);
+
+        res.json(sellingProductsData);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Lỗi trong quá trình xử lý.' });
+    }
+}
+
+export const getTotalOrder = async (req, res) => {
+    try {
+        const { year, month } = req.query;
+        const aggregationStages = [];
+
+        if (year) {
+            aggregationStages.push({
+                $match: {
+                    createdAt: {
+                        $gte: new Date(parseInt(year), 0, 1),
+                        $lt: new Date(parseInt(year) + 1, 0, 1),
+                    },
+                },
+            });
+
+            if (month) {
+                aggregationStages[0].$match.createdAt = {
+                    $gte: new Date(parseInt(year), parseInt(month) - 1, 1),
+                    $lt: new Date(parseInt(year), parseInt(month), 1),
+                };
+            }
+        } else {
+            return res.status(400).json({ error: 'Thiếu thông tin năm trong yêu cầu.' });
+        }
+
+        const groupFields = { year: { $year: '$createdAt' } };
+        if (month) {
+            groupFields.month = { $month: '$createdAt' };
+        }
+
+        const result = await Order.aggregate([
+            ...aggregationStages,
+            {
+                $group: {
+                    _id: groupFields,
+                    count: { $sum: 1 },
+                },
+            },
+        ]);
+
+        res.json(result);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Lỗi trong quá trình xử lý.' });
+    }
+}
 
 export const getUserStatistics = async (req, res) => {
     try {

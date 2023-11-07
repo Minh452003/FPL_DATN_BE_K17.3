@@ -110,8 +110,8 @@ export const createOrder = async (req, res) => {
                 message: errors
             })
         }
-        if (body.total > 5000000) {
-            if (body.total > 5000000 && body.type == 'momo') {
+        if (Number(body.total + body.shipping) > 5000000) {
+            if (Number(body.total + body.shipping) > 5000000 && body.type == 'momo') {
                 const accessKey = 'F8BBA842ECF85';
                 const secretKey = 'K951B6PE1waDMi640xX08PD3vg6EkVlz';
                 const orderInfo = 'CỌC ĐƠN HÀNG MOMO';
@@ -120,12 +120,10 @@ export const createOrder = async (req, res) => {
                 const ipnUrl = 'http://localhost:8088/api/momo-deposit';
                 const requestType = "payWithMethod";
                 const amount = Math.floor((req.body.total + req.body.shipping) * 0.2);
-                console.log(amount);
                 const orderId = partnerCode + new Date().getTime();
                 const requestId = orderId;
                 // Bổ sung
                 const total = (req.body.total + req.body.shipping) - amount;
-                console.log(total);
                 const userId = req.body.userId;
                 const couponId = req.body.couponId;
                 const products = req.body.products;
@@ -133,7 +131,6 @@ export const createOrder = async (req, res) => {
                 const phone = req.body.phone;
                 const address = req.body.address;
                 const shipping = Math.floor((req.body.shipping - (req.body.shipping * 0.2)));
-                console.log(shipping);
                 const notes = req.body.notes;
                 const extraData = `total=${total}&shipping=${shipping}&userId=${userId}&couponId=${couponId}&phone=${phone}&address=${address}&products=${JSON.stringify(products)}`;
                 const orderGroupId = '';
@@ -205,7 +202,7 @@ export const createOrder = async (req, res) => {
                 console.log("Sending....");
                 momoRequest.write(requestBody);
                 momoRequest.end();
-            } else if (body.total > 5000000 && body.type == 'paypal') {
+            } else if (Number(body.total + body.shipping) > 5000000 && body.type == 'paypal') {
                 const { products, userId, couponId, phone, address, notes, shipping, total } = req.body
                 const exchangeRate = 1 / 24565;
                 const shippingFee = Number(((shipping * 0.2) * exchangeRate).toFixed(2));
