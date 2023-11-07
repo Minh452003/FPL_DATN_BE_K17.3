@@ -63,7 +63,6 @@ app.use("/api", routerCustomizedProduct);
 app.use("/api", routerChildProduct);
 app.use("/api", routerStatiscal);
 app.use("/api", routerNews)
-
 app.listen(8088, async () => {
     await mongoose.connect(process.env.URL_MONGO, { useNewUrlParser: true, useUnifiedTopology: true });
     console.log("Server is running 8088");

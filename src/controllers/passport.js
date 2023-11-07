@@ -51,7 +51,7 @@ passport.deserializeUser(({ user, accessToken }, done) => {
 
 export const LoginWithGoogle = (req, res) => {
     const { accessToken } = req.user;
-    res.redirect(`http://localhost:5173/success/?token=${accessToken}`);
+    res.redirect(`http://localhost:5173/?token=${accessToken}`);
 }
 
 export const LogoutGoogle = (req, res) => {
