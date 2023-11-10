@@ -240,8 +240,12 @@ export const signin = async (req, res) => {
 
         const isVerify = await user.verified;
         if (!isVerify) {
+            const otpResponse = await sendOTPVerificationEmail(user);
+
             return res.status(400).json({
-                message: "Vui lòng xác minh tài khoản trước khi đăng nhập"
+                message: "Vui lòng xác minh tài khoản trước khi đăng nhập",
+                user,
+                otpResponse
             })
         }
 

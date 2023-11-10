@@ -11,6 +11,7 @@ export const CommentSchema = Joi.object({
     description: Joi.string().required().messages({
         'any.required': 'description không được để trống.',
     }),
+    image: Joi.array(),
     rating: Joi.number().integer().min(1).max(5).required().messages({
         'number.base': 'rating phải là một số.',
         'number.integer': 'rating phải là một số nguyên.',
@@ -19,4 +20,6 @@ export const CommentSchema = Joi.object({
         'any.required': 'rating không được để trống.',
     }),
     formattedCreatedAt: Joi.string().optional(),
+    orderId: Joi.string()
+
 }).options({ abortEarly: false });

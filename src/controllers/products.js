@@ -3,7 +3,7 @@ import Category from "../models/category.js";
 import { ProductSchema } from "../schemas/products.js";
 
 export const getAll = async (req, res) => {
-    const { _limit = 10, _sort = "createAt", _order = "asc", _page = 1, q } = req.query;
+    const { _limit = 100, _sort = "createAt", _order = "asc", _page = 1, q } = req.query;
     const options = {
         page: _page,
         limit: _limit,

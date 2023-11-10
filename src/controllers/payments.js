@@ -547,7 +547,7 @@ export const depositPaypal = async (req, res) => {
                 products: productList,
                 total: Number(Math.floor((totalMoney + shipping) - deposit)),
                 deposit: deposit,
-                shipping: Number(Math.floor(shipping - (shipping * 0.2))),
+                shipping: Number(shipping),
                 phone,
                 address,
                 userId,

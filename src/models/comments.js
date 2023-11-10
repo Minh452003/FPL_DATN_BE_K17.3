@@ -16,6 +16,9 @@ const CommentSchema = mongoose.Schema({
     type: String,
     required: true
   },
+  image: {
+    type: Array
+  },
   rating: {
     type: Number,
     required: true

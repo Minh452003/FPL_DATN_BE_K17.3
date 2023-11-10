@@ -130,7 +130,7 @@ export const createOrder = async (req, res) => {
                 const status = req.body.status;
                 const phone = req.body.phone;
                 const address = req.body.address;
-                const shipping = Math.floor((req.body.shipping - (req.body.shipping * 0.2)));
+                const shipping = req.body.shipping
                 const notes = req.body.notes;
                 const extraData = `total=${total}&shipping=${shipping}&userId=${userId}&couponId=${couponId}&phone=${phone}&address=${address}&products=${JSON.stringify(products)}`;
                 const orderGroupId = '';
@@ -222,6 +222,7 @@ export const createOrder = async (req, res) => {
                 const totalMoney = transformedProducts.reduce((acc, product) => {
                     return acc + (product.price * product.quantity);
                 }, 0);
+
                 const create_payment_json = {
                     intent: 'sale',
                     payer: {
