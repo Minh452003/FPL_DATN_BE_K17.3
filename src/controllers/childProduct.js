@@ -34,14 +34,6 @@ export const createChildProduct = async (req, res) => {
                 message: errors
             })
         }
-        const size = await Size.findById(body.sizeId);
-        if (!size) {
-            return res.status(400).json({
-                message: "Không có size này"
-            })
-        }
-        const newProductPrice = body.product_price + size.size_price;
-        body.product_price = newProductPrice
         const product = await ChildProduct.create(body);
         if (product.length === 0) {
             return res.status(400).json({
@@ -101,14 +93,6 @@ export const updateChildProduct = async (req, res) => {
                 message: errors
             })
         }
-        const size = await Size.findById(body.sizeId);
-        if (!size) {
-            return res.status(400).json({
-                message: "Không có size này"
-            })
-        }
-        const newProductPrice = body.product_price + size.size_price;
-        body.product_price = newProductPrice
         const data = await ChildProduct.findByIdAndUpdate({ _id: id }, body, { new: true })
         if (data.length === 0) {
             return res.status(400).json({
