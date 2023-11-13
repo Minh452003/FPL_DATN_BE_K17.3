@@ -25,6 +25,8 @@ import routerCustomizedProduct from "./routers/customizedProduct.js";
 import routerChildProduct from "./routers/childProduct.js";
 import routerStatiscal from "./routers/statistical.js";
 import routerNews from "./routers/news.js";
+import routerBanner from "./routers/banner.js";
+
 
 dotenv.config();
 const app = express();
@@ -62,7 +64,8 @@ app.use("/api", routerMaterial);
 app.use("/api", routerCustomizedProduct);
 app.use("/api", routerChildProduct);
 app.use("/api", routerStatiscal);
-app.use("/api", routerNews)
+app.use("/api", routerNews);
+app.use("/api", routerBanner)
 app.listen(8088, async () => {
     await mongoose.connect(process.env.URL_MONGO, { useNewUrlParser: true, useUnifiedTopology: true });
     console.log("Server is running 8088");
