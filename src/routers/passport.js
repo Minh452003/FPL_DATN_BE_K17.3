@@ -13,7 +13,7 @@ routerPassport.get('/auth/google',
 routerPassport.get('/auth/google/callback',
     passport.authenticate('google', {
         successRedirect: `http://localhost:8088/api/google/success`,
-        failureRedirect: `http://localhost:5173/error`
+        failureRedirect: `http://localhost:5173/signin`
     }));
 routerPassport.use('/auth/logout', LogoutGoogle);
 routerPassport.use('/google/success', LoginWithGoogle);

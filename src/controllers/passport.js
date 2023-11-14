@@ -19,26 +19,34 @@ passport.use(new GoogleStrategy({
         if (isExitUser) {
             const token = jwt.sign({ id: isExitUser._id }, "DATN", { expiresIn: "2h" });
             return done(null, { user: isExitUser, accessToken: token });
-
+        } else {
+            try {
+                // Thử chèn một tài khoản mới
+                const newUser = new Auth({
+                    authType: 'google',
+                    googleId: profile.id,
+                    first_name: profile.name.familyName,
+                    last_name: profile.name.givenName,
+                    email: profile.emails[0].value,
+                    avatar: {
+                        url: profile.picture,
+                        publicId: null
+                    },
+                    password: "Không có mật khẩu",
+                });
+                await newUser.save();
+                const token = jwt.sign({ id: newUser._id }, "DATN", { expiresIn: "2h" });
+                done(null, { user: newUser, accessToken: token });
+            } catch (error) {
+                // Xử lý lỗi chèn (trường hợp trùng lặp)
+                if (error.code === 11000) {
+                    return done(null, false, { message: "Tài khoản đã tồn tại" });
+                } else {
+                    // Xử lý các lỗi khác
+                    return done(error);
+                }
+            }
         }
-
-        const newUser = new Auth({
-            authType: 'google',
-            googleId: profile.id,
-            first_name: profile.name.familyName,
-            last_name: profile.name.givenName,
-            email: profile.emails[0].value,
-            avatar: {
-                url: profile.picture,
-                publicId: null
-            },
-            password: "Không có mật khẩu",
-            phone: "Chưa có số điện thoại",
-            address: "Chưa có địa chỉ"
-        })
-        await newUser.save();
-        const token = jwt.sign({ id: newUser._id }, "DATN", { expiresIn: "2h" });
-        done(null, { user: newUser, accessToken: token });
     }
 ));
 

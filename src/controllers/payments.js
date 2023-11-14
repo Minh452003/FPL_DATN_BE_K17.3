@@ -204,9 +204,10 @@ paypal.configure({
     'client_secret': 'ENYh-J6nt272nE7bQ_nWtAUijIwvlt0Yf9IYU2-Y6vDBT6lZYYw6-xNMSqt9vISwLlPC6vHs-_T6s3dx'
 });
 
-export const PayPal = (req, res) => {
+export const PayPal = async (req, res) => {
     const { products, userId, couponId, phone, address, notes, shipping } = req.body
-    const exchangeRate = 1 / 24565;
+    const rate = await axios.get(`https://openexchangerates.org/api/latest.json/?app_id=7ca0b8d132d64563990a974556701e6d&base=USD`)
+    const exchangeRate = 1 / rate.data.rates.VND;
     const shippingFee = Number((shipping * exchangeRate).toFixed(2));
     const transformedProducts = products.map(product => {
         const classOption = `Price=${product.product_price}&&Color=${product.colorId}&&Size=${product.sizeId}&&Material=${product.materialId}`;
@@ -224,6 +225,7 @@ export const PayPal = (req, res) => {
     const totalMoney = transformedProducts.reduce((acc, product) => {
         return acc + (product.price * product.quantity);
     }, 0);
+    const money = Number(totalMoney.toFixed(2));
     const create_payment_json = {
         intent: 'sale',
         payer: {
@@ -240,9 +242,9 @@ export const PayPal = (req, res) => {
                 },
                 amount: {
                     currency: 'USD',
-                    total: (totalMoney + shippingFee).toFixed(2).toString(),
+                    total: (money + shippingFee).toFixed(2).toString(),
                     details: {
-                        subtotal: totalMoney.toString(),
+                        subtotal: money.toString(),
                         shipping: shippingFee.toString(), // Định nghĩa phí vận chuyển
                     },
                 },

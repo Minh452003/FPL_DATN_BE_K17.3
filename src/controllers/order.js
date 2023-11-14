@@ -6,6 +6,7 @@ import ChildProduct from "../models/childProduct.js";
 const { createHmac } = await import('node:crypto');
 import { request } from 'https';
 import paypal from 'paypal-rest-sdk'
+import axios from "axios";
 
 export const getOrderByUserId = async (req, res) => {
     try {
@@ -204,7 +205,8 @@ export const createOrder = async (req, res) => {
                 momoRequest.end();
             } else if (Number(body.total + body.shipping) > 5000000 && body.type == 'paypal') {
                 const { products, userId, couponId, phone, address, notes, shipping, total } = req.body
-                const exchangeRate = 1 / 24565;
+                const rate = await axios.get(`https://openexchangerates.org/api/latest.json/?app_id=7ca0b8d132d64563990a974556701e6d&base=USD`)
+                const exchangeRate = 1 / rate.data.rates.VND;
                 const shippingFee = Number(((shipping * 0.2) * exchangeRate).toFixed(2));
                 const transformedProducts = products.map(product => {
                     const classOption = `Price=${product.product_price}&&Color=${product.colorId}&&Size=${product.sizeId}&&Material=${product.materialId}`;
@@ -222,6 +224,7 @@ export const createOrder = async (req, res) => {
                 const totalMoney = transformedProducts.reduce((acc, product) => {
                     return acc + (product.price * product.quantity);
                 }, 0);
+                const money = Number(totalMoney.toFixed(2));
 
                 const create_payment_json = {
                     intent: 'sale',
@@ -239,9 +242,9 @@ export const createOrder = async (req, res) => {
                             },
                             amount: {
                                 currency: 'USD',
-                                total: (totalMoney + shippingFee).toFixed(2).toString(),
+                                total: (money + shippingFee).toFixed(2).toString(),
                                 details: {
-                                    subtotal: totalMoney.toFixed(2).toString(),
+                                    subtotal: money.toFixed(2).toString(),
                                     shipping: shippingFee.toFixed(2).toString(), // Định nghĩa phí vận chuyển
                                 },
                             },
