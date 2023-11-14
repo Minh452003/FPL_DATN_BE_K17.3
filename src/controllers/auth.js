@@ -237,14 +237,15 @@ export const signin = async (req, res) => {
                 message: "Tài khoản không tồn tại",
             });
         }
-
-        const isVerify = await user.verified;
+        const isVerify = user.verified;
         if (!isVerify) {
-            const otpResponse = await sendOTPVerificationEmail(user);
-
+            await AuthOTPVerification.deleteMany({ userId: user._id });
+            const otpResponse = await sendOTPVerificationEmail({
+                _id: user._id,
+                email,
+            });
             return res.status(400).json({
                 message: "Vui lòng xác minh tài khoản trước khi đăng nhập",
-                user,
                 otpResponse
             })
         }
@@ -280,7 +281,6 @@ export const signin = async (req, res) => {
         });
     }
 };
-
 
 // Gửi OTP
 export const sendOTPVerificationEmail = async ({ _id, email }) => {
