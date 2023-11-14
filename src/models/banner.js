@@ -3,19 +3,7 @@ import mongoosePaginate from "mongoose-paginate-v2";
 import MongooseDelete from "mongoose-delete";
 
 const bannerSchema = mongoose.Schema({
-  image1: {
-    type: Object,
-    required: true,
-  },
-  image2: {
-    type: Object,
-    required: true,
-  },
-  image3: {
-    type: Object,
-    required: true,
-  },
-  image4: {
+  image: {
     type: Object,
     required: true,
   },
