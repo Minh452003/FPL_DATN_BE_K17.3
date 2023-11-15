@@ -433,16 +433,16 @@ const sendVerificationEmail = async (userId) => {
     const details = {
         from: process.env.MAIL_USERNAME,
         to: currentUser.email,
-        subject: "📲 Đăng kí thành công nội thất Casa",
+        subject: "📲 Đăng kí thành công Casa Furniture",
         html:
             `
-            <h1>Chúc mừng bạn đến với Casa ^^</h1>
+            <h1>Chào mừng bạn đến với Casa ^.^ </h1>
             <p>Xin chào <b>${currentUser.first_name} ${currentUser.last_name},</b></p>
             <p>Chúc mừng bạn đã đăng ký tài khoản thành công. Chúng tôi rất vui mừng chào đón bạn vào cộng đồng của chúng tôi.</p>
-            <img src="https://www.quadernionline.it/wp-content/uploads/2021/07/siti-web-parma.jpg" alt="Casa Logo">
+            <img src="https://res.cloudinary.com/dkvghcobl/image/upload/v1700052990/hby7nyozorvpib8k7z9h.png" alt="Casa Logo">
             <p>Chúc bạn có một trải nghiệm tuyệt vời với phiên bản hoàn toàn mới này!</p>
-            <p>Mọi góp ý và phản hồi bạn liên hệ dưới đây : </p>
-            <p>Gmail: duongthph21290@fpt.edu.vn</p>
+            <p>Mọi góp ý và phản hồi bạn liên hệ dưới đây: </p>
+            <p>Gmail: casanoithat@gmail.com</p>
             <p>Hotline: 0969085244</p>
 
         `,
