@@ -6,10 +6,6 @@ const sizeSchema = new mongoose.Schema(
       type: String,
       required: true
     },
-    size_price: {
-      type: Number,
-      required: true
-    },
     size_height: {
       type: Number, //Chiều cao (cm)
       required: true
