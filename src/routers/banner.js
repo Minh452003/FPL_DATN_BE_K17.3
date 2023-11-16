@@ -9,7 +9,7 @@ const routerBanner = express.Router();
 routerBanner.post('/banners',authenticate, authorization, createBanner);
 routerBanner.get('/banners', getAllBanners);
 routerBanner.get('/banners/:id',getBannerById);
-routerBanner.put('/banners/:id', authenticate, authorization, updateBanner);
+routerBanner.patch('/banners/:id', authenticate, authorization, updateBanner);
 routerBanner.delete('/banners/:id', authenticate, authorization, deleteBanner);
 
 export default routerBanner;
