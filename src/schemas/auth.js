@@ -62,7 +62,8 @@ export const updateUserSchema = joi.object({
     }),
     phone: joi.string().max(10),
     address: joi.string(),
-    avatar: joi.object()
+    avatar: joi.object(),
+    role: joi.string()
 
 });
 
