@@ -300,6 +300,11 @@ export const getSellingProductsData = async (req, res) => {
                     _id: '$product_name', // Gom nhóm theo tên sản phẩm
                     totalSold: { $sum: '$sold_quantity' } // Tính tổng số sản phẩm đã bán
                 }
+            },
+            {
+                $match: {
+                    totalSold: { $gt: 0 } // Lọc các sản phẩm có lượng bán lớn hơn 0
+                }
             }
         ]);
 
