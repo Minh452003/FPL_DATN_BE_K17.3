@@ -18,7 +18,7 @@ export const PayMomo = (req, res) => {
     const redirectUrl = 'http://localhost:8088/api/momo';
     const ipnUrl = 'http://localhost:8088/api/momo';
     const requestType = "payWithMethod";
-    const amount = req.body.total;
+    const amount = Math.floor(req.body.total + req.body.shipping)
     const orderId = partnerCode + new Date().getTime();
     const requestId = orderId;
     // Bổ sung
