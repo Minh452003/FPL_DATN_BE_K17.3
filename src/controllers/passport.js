@@ -70,7 +70,7 @@ export const LogoutGoogle = (req, res) => {
         res.redirect(process.env.CLIENT_URL);
     });
 }
-// 
+/// 
 passport.use(new FacebookStrategy({
     clientID: "347641427607083",
     clientSecret: "09b41757bd4e273afc6dec54b34a433c",
@@ -85,24 +85,34 @@ passport.use(new FacebookStrategy({
         if (isExitUser) {
             const token = jwt.sign({ id: isExitUser._id }, "DATN", { expiresIn: "2h" });
             return cb(null, { user: isExitUser, accessToken: token });
+        } else {
+            try {
+                const newUser = new Auth({
+                    authType: 'facebook',
+                    facebookId: profile.id,
+                    first_name: profile.name.familyName,
+                    last_name: profile.name.givenName,
+                    email: profile.emails[0].value,
+                    avatar: {
+                        url: profile.photos[0].value,
+                        publicId: null
+                    },
+                    password: "Không có mật khẩu",
+                })
+                await newUser.save();
+                const token = jwt.sign({ id: newUser._id }, "DATN", { expiresIn: "2h" });
+                cb(null, { user: newUser, accessToken: token });
+            } catch (error) {
+                // Xử lý lỗi chèn (trường hợp trùng lặp)
+                if (error.code === 11000) {
+                    return cb(null, false, { message: "Tài khoản đã tồn tại" });
+                } else {
+                    // Xử lý các lỗi khác
+                    return cb(error);
+                }
+            }
         }
-        const newUser = new Auth({
-            authType: 'facebook',
-            facebookId: profile.id,
-            first_name: profile.name.familyName,
-            last_name: profile.name.givenName,
-            email: profile.emails[0].value,
-            avatar: {
-                url: profile.photos[0].value,
-                publicId: null
-            },
-            password: "Không có mật khẩu",
-            phone: "Chưa có số điện thoại",
-            address: "Chưa có địa chỉ"
-        })
-        await newUser.save();
-        const token = jwt.sign({ id: newUser._id }, "DATN", { expiresIn: "2h" });
-        cb(null, { user: newUser, accessToken: token });
+
     }
 ));
 export const LoginWithFacebook = (req, res) => {

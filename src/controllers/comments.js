@@ -16,20 +16,9 @@ export const getCommentFromProduct = async (req, res) => {
                 message: 'Không tìm thấy theo sản phẩm bình luận',
             });
         }
-
-        const formattedComments = comments.map(comment => ({
-            _id: comment._id,
-            userId: comment.userId,
-            productId: comment.productId,
-            description: comment.description,
-            formattedCreatedAt: comment.formattedCreatedAt,
-            rating: comment.rating,
-            image: comment.image
-        }));
-
         return res.status(200).json({
             message: 'Lấy bình luận theo sản phẩm thành công',
-            comments: formattedComments,
+            comments: comments,
         });
     } catch (error) {
         res.status(400).json({
