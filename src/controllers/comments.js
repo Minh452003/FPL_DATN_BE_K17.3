@@ -7,7 +7,7 @@ import Order from "../models/orders.js"
 export const getCommentFromProduct = async (req, res) => {
     try {
         const { productId } = req.params;
-        const comments = await Comment.find({ productId: productId }).populate({
+        const comments = await Comment.find({ productId: productId }).sort({ createdAt: -1 }).populate({
             path: 'userId',
             select: 'first_name last_name email avatar',
         });
@@ -26,7 +26,6 @@ export const getCommentFromProduct = async (req, res) => {
         });
     }
 };
-
 
 export const getOneComment = async (req, res) => {
     try {

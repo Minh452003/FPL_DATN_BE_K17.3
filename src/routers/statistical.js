@@ -1,5 +1,5 @@
 import express from "express";
-import { getReviewStatistics, getTopSellingProducts, getRevenueAndProfit, getUserStatistics, getTopViewedProducts, getTotalSoldQuantity, getTotalCreatedProducts, getTotalOrder, getSellingProductsData } from "../controllers/statistical.js";
+import { getReviewStatistics, getTopSellingProducts, getRevenueAndProfit, getUserStatistics, getTopViewedProducts, getTotalSoldQuantity, getTotalCreatedProducts, getTotalOrder, getSellingProductsData, getOrderUnconfirmed, getOrderConfirmed, getOrderAccomplished } from "../controllers/statistical.js";
 
 const routerStatiscal = express.Router();
 
@@ -12,5 +12,7 @@ routerStatiscal.get('/statistical/products-total', getTotalCreatedProducts);
 routerStatiscal.get('/statistical/order-count', getTotalOrder);
 routerStatiscal.get('/statistical/users', getUserStatistics);
 routerStatiscal.get('/statistical/comments', getReviewStatistics);
-
+routerStatiscal.get('/statistical/order-unconfirmed', getOrderUnconfirmed);
+routerStatiscal.get('/statistical/order-confirmed', getOrderConfirmed);
+routerStatiscal.get('/statistical/order-accomplished', getOrderAccomplished);
 export default routerStatiscal;
