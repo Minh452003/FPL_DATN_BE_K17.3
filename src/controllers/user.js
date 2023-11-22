@@ -59,7 +59,6 @@ export const resetPassword = async (req, res) => {
         }
 
         const user = await Auth.findById(userId);
-        console.log(user);
         // Kiểm tra xem người dùng có tồn tại và có được phép đặt lại mật khẩu hay không
         if (!user) {
             return res.status(400).json({
