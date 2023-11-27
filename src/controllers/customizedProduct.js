@@ -14,8 +14,8 @@ export const createCustomizedProduct = async (req, res) => {
                 message: errors
             })
         }
-        const newProductPrice = body.product_price * (1 + category.price_increase_percent / 100);
-        body.product_price = newProductPrice
+        const newProductPrice = Number(body.product_price) * (1 + category.price_increase_percent / 100);
+        body.product_price = Math.floor(newProductPrice)
         const customizedProduct = await CustomizedProduct.create(body);
         if (customizedProduct.length === 0) {
             return res.status(400).json({
