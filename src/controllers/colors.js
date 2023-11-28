@@ -23,10 +23,17 @@ export const getColorList = async (req, res) => {
 
 export const createColor = async (req, res) => {
     try {
+        const { colors_name } = req.body;
         const { error } = colorSchema.validate(req.body);
         if (error) {
             return res.status(400).json({
                 message: error.details.map((err) => err.message),
+            });
+        }
+        const data = await Color.findOne({ colors_name });
+        if (data) {
+            return res.status(400).json({
+                message: "Tên màu đã tồn tại",
             });
         }
         const color = await Color.create(req.body);
@@ -50,6 +57,7 @@ export const createColor = async (req, res) => {
 export const updateColor = async (req, res) => {
     try {
         const id = req.params.id;
+        const { colors_name } = req.body;
         const body = req.body;
         const { error } = colorSchema.validate(body, { abortEarly: false });
         if (error) {
@@ -57,6 +65,12 @@ export const updateColor = async (req, res) => {
             return res.status(400).json({
                 message: errors
             })
+        }
+        const data = await Color.findOne({ colors_name, _id: { $ne: id } });
+        if (data) {
+            return res.status(400).json({
+                message: "Tên màu đã tồn tại",
+            });
         }
         const color = await Color.findByIdAndUpdate(id, body, { new: true, });
         if (!color) {

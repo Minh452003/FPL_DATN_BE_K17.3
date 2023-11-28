@@ -116,12 +116,19 @@
     export const addProduct = async (req, res) => {
         try {
             const body = req.body;
+            const { product_name } = body
             const { error } = ProductSchema.validate(body, { abortEarly: false });
             if (error) {
                 const errors = error.details.map((err) => err.message);
                 return res.status(400).json({
                     message: errors
                 })
+            }
+            const data = await Product.findOne({ product_name });
+            if (data) {
+                return res.status(400).json({
+                    message: "Tên sản phẩm đã tồn tại",
+                });
             }
             const product = await Product.create(body);
             await Category.findOneAndUpdate(product.categoryId, {
@@ -142,7 +149,7 @@
             return res.status(400).json({
                 message: error.message
             })
-
+    
         }
     }
 
@@ -151,6 +158,7 @@
             const id = req.params.id;
             const body = req.body;
             const { categoryId } = req.body
+            const { product_name } = body
             const product = await Product.findById(id)
             const { error } = ProductSchema.validate(body, { abortEarly: false });
             if (error) {
@@ -158,6 +166,12 @@
                 return res.status(400).json({
                     message: errors
                 })
+            }
+            const data1 = await Product.findOne({ product_name, _id: { $ne: id } });
+            if (data1) {
+                return res.status(400).json({
+                    message: "Tên sản phẩm đã tồn tại",
+                });
             }
             await Category.findByIdAndUpdate(product.categoryId, {
                 $pull: {

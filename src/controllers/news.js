@@ -157,11 +157,18 @@ export const updateNew = async (req, res) => {
   try {
     const id = req.params.id;
     const body = req.body;
+    const { new_name } = body;
     const { error } = newsSchema.validate(body, { abortEarly: false });
     if (error) {
       const errors = error.details.map((err) => err.message);
       return res.status(400).json({
         message: errors,
+      });
+    }
+    const data = await News.findOne({ new_name, _id: { $ne: id } });
+    if (data) {
+      return res.status(400).json({
+        message: "Tin tức đã tồn tại",
       });
     }
     const news = await News.findOneAndUpdate({ _id: id }, body, {

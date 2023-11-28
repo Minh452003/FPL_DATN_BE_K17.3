@@ -23,10 +23,17 @@ export const getMaterialList = async (req, res) => {
 
 export const createMaterial = async (req, res) => {
     try {
+        const { material_name } = req.body
         const { error } = materialSchema.validate(req.body);
         if (error) {
             return res.status(400).json({
                 message: error.details.map((err) => err.message),
+            });
+        }
+        const data = await Material.findOne({ material_name });
+        if (data) {
+            return res.status(400).json({
+                message: "Tên chất liệu đã tồn tại",
             });
         }
         const material = await Material.create(req.body);
@@ -51,6 +58,13 @@ export const updateMaterial = async (req, res) => {
     try {
         const id = req.params.id;
         const body = req.body;
+        const { material_name } = body
+        const data = await Material.findOne({ material_name, _id: { $ne: id } });
+        if (data) {
+            return res.status(400).json({
+                message: "Tên chất liệu đã tồn tại",
+            });
+        }
         const { error } = materialSchema.validate(body, { abortEarly: false });
         if (error) {
             const errors = error.details.map((err) => err.message)
