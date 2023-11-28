@@ -156,6 +156,13 @@ export const updateCategory = async (req, res) => {
   try {
     const id = req.params.id;
     const body = req.body;
+    const { category_name } = body;
+    const data = await Category.findOne({ category_name, _id: { $ne: id } });
+    if (data) {
+      return res.status(400).json({
+        message: "Danh mục đã tồn tại",
+      });
+    }
     const { error } = categorySchema.validate(body, { abortEarly: false });
     if (error) {
       const errors = error.details.map((err) => err.message);

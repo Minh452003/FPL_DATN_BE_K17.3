@@ -48,7 +48,7 @@ export const createBrand = async (req, res) => {
     const data = await Brand.findOne({ brand_name });
     if (data) {
       return res.status(400).json({
-        message: "Brand đã tồn tại",
+        message: "Thương hiệu đã tồn tại",
       });
     }
     const { error } = BrandSchema.validate(body, { abortEarly: false });
@@ -63,7 +63,7 @@ export const createBrand = async (req, res) => {
       return res.status(404).json({
         message: 'Không thể thêm thương hiệu',
       });
-      
+
     }
     return res.status(200).json({
       message: 'Thêm thương hiệu thành công',
@@ -76,11 +76,17 @@ export const createBrand = async (req, res) => {
   }
 };
 
-
 export const updateBrand = async (req, res) => {
   try {
     const id = req.params.id;
     const body = req.body
+    const { brand_name } = body;
+    const data = await Brand.findOne({ brand_name, _id: { $ne: id } });
+    if (data) {
+      return res.status(400).json({
+        message: "Thương hiệu đã tồn tại",
+      });
+    }
     const { error } = BrandSchema.validate(body, { abortEarly: false });
     if (error) {
       const errors = error.details.map((err) => err.message);

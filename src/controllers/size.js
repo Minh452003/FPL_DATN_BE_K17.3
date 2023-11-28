@@ -33,10 +33,17 @@ export const getSizeById = async (req, res) => {
 
 export const createSize = async (req, res) => {
   try {
+    const { size_name } = req.body
     const { error } = SizeSchema.validate(req.body);
     if (error) {
       return res.status(400).json({
         message: error.details.map((err) => err.message),
+      });
+    }
+    const data = await Size.findOne({ size_name });
+    if (data) {
+      return res.status(400).json({
+        message: "Tên kích thước đã tồn tại",
       });
     }
     const size = await Size.create(req.body);
@@ -69,12 +76,19 @@ export const updateSize = async (req, res) => {
   try {
     const id = req.params.id;
     const body = req.body;
+    const { size_name } = body
     const { error } = SizeSchema.validate(body, { abortEarly: false });
     if (error) {
       const errors = error.details.map((err) => err.message)
       return res.status(400).json({
         message: errors
       })
+    }
+    const data = await Size.findOne({ size_name, _id: { $ne: id } });
+    if (data) {
+      return res.status(400).json({
+        message: "Tên kích thước đã tồn tại",
+      });
     }
     const size = await Size.findByIdAndUpdate(id, body, { new: true, });
     return res.status(200).json({

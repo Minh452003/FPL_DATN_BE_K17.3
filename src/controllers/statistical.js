@@ -273,6 +273,7 @@ export const getTotalCreatedProducts = async (req, res) => {
 export const getSellingProductsData = async (req, res) => {
     try {
         const { year, month } = req.query;
+
         let query = {};
 
         if (year && month) {
@@ -290,20 +291,30 @@ export const getSellingProductsData = async (req, res) => {
             return res.status(400).json({ error: 'Thiếu thông tin tháng hoặc năm trong yêu cầu.' });
         }
 
-        // Sử dụng aggregation framework để tính số lượng sản phẩm đã bán cho mỗi sản phẩm
         const sellingProductsData = await Product.aggregate([
             {
                 $match: query,
             },
             {
+                $lookup: {
+                    from: 'categories', // Tên của collection chứa danh mục
+                    localField: 'categoryId',
+                    foreignField: '_id',
+                    as: 'category'
+                }
+            },
+            {
+                $unwind: '$category'
+            },
+            {
                 $group: {
-                    _id: '$product_name', // Gom nhóm theo tên sản phẩm
+                    _id: '$category.category_name', // Gom nhóm theo tên danh mục
                     totalSold: { $sum: '$sold_quantity' } // Tính tổng số sản phẩm đã bán
                 }
             },
             {
                 $match: {
-                    totalSold: { $gt: 0 } // Lọc các sản phẩm có lượng bán lớn hơn 0
+                    totalSold: { $gt: 0 } // Lọc các danh mục có lượng bán lớn hơn 0
                 }
             }
         ]);
@@ -487,7 +498,7 @@ export const getOrderUnconfirmed = async (req, res) => {
         }
 
         // Điều kiện để lọc trạng thái chưa xác nhận
-        const notCompletedStatuses = statuses.filter(status => status.status_name !== 'Đã hoàn thành' && status.status_name !== 'Đã xác nhận');
+        const notCompletedStatuses = statuses.filter(status => status.status_name !== 'Đã hoàn thành' && status.status_name !== 'Đã xác nhận' && status.status_name !== 'Đang giao hàng' && status.status_name !== 'Đã huỷ');
 
         aggregationStages.push({
             $match: {
@@ -541,7 +552,7 @@ export const getOrderConfirmed = async (req, res) => {
         }
 
         // Điều kiện để lọc trạng thái chưa xác nhận
-        const notCompletedStatuses = statuses.filter(status => status.status_name !== 'Đã hoàn thành' && status.status_name !== 'Chưa xác nhận');
+        const notCompletedStatuses = statuses.filter(status => status.status_name !== 'Đã hoàn thành' && status.status_name !== 'Chưa xác nhận' && status.status_name !== 'Đang giao hàng' && status.status_name !== 'Đã huỷ');
 
         aggregationStages.push({
             $match: {
@@ -595,7 +606,7 @@ export const getOrderAccomplished = async (req, res) => {
         }
 
         // Điều kiện để lọc trạng thái chưa xác nhận
-        const notCompletedStatuses = statuses.filter(status => status.status_name !== 'Đã xác nhận' && status.status_name !== 'Chưa xác nhận');
+        const notCompletedStatuses = statuses.filter(status => status.status_name !== 'Đã xác nhận' && status.status_name !== 'Chưa xác nhận' && status.status_name !== 'Đang giao hàng' && status.status_name !== 'Đã huỷ');
 
         aggregationStages.push({
             $match: {
@@ -610,6 +621,115 @@ export const getOrderAccomplished = async (req, res) => {
         if (month) {
             aggregationStages[0].$match.createdAt = {
                 $gte: new Date(parseInt(year), parseInt(month) - 1, 1),
+                $lt: new Date(parseInt(year), parseInt(month), 1),
+            };
+        }
+
+        const groupFields = { year: { $year: '$createdAt' } };
+        if (month) {
+            groupFields.month = { $month: '$createdAt' };
+        }
+
+        const result = await Order.aggregate([
+            ...aggregationStages,
+            {
+                $group: {
+                    _id: groupFields,
+                    count: { $sum: 1 },
+                },
+            },
+        ]);
+
+        res.json(result);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Lỗi trong quá trình xử lý.' });
+    }
+}
+
+
+export const getOrderDelivering = async (req, res) => {
+    try {
+        const { year, month } = req.query;
+
+        // Lấy dữ liệu trạng thái từ collection "statuses"
+        const statuses = await Status.find({});
+
+        const aggregationStages = [];
+
+        if (!year) {
+            return res.status(400).json({ error: 'Thiếu thông tin năm trong yêu cầu.' });
+        }
+
+        // Điều kiện để lọc trạng thái chưa xác nhận
+        const notCompletedStatuses = statuses.filter(status => status.status_name !== 'Đã xác nhận' && status.status_name !== 'Chưa xác nhận' && status.status_name !== 'Đã hoàn thành' && status.status_name !== 'Đã huỷ');
+
+        aggregationStages.push({
+            $match: {
+                createdAt: {
+                    $gte: new Date(parseInt(year), 0, 1),
+                    $lt: new Date(parseInt(year) + 1, 0, 1),
+                },
+                'status': { $in: notCompletedStatuses.map(status => status._id) }
+            }
+        });
+
+        if (month) {
+            aggregationStages[0].$match.createdAt = {
+                $gte: new Date(parseInt(year), parseInt(month) - 1, 1),
+                $lt: new Date(parseInt(year), parseInt(month), 1),
+            };
+        }
+
+        const groupFields = { year: { $year: '$createdAt' } };
+        if (month) {
+            groupFields.month = { $month: '$createdAt' };
+        }
+
+        const result = await Order.aggregate([
+            ...aggregationStages,
+            {
+                $group: {
+                    _id: groupFields,
+                    count: { $sum: 1 },
+                },
+            },
+        ]);
+
+        res.json(result);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Lỗi trong quá trình xử lý.' });
+    }
+}
+export const getOrderCanceled = async (req, res) => {
+    try {
+        const { year, month } = req.query;
+
+        // Lấy dữ liệu trạng thái từ collection "statuses"
+        const statuses = await Status.find({});
+
+        const aggregationStages = [];
+
+        if (!year) {
+            return res.status(400).json({ error: 'Thiếu thông tin năm trong yêu cầu.' });
+        }
+
+        // Điều kiện để lọc trạng thái chưa xác nhận
+        const notCompletedStatuses = statuses.filter(status => status.status_name !== 'Đã xác nhận' && status.status_name !== 'Chưa xác nhận' && status.status_name !== 'Đã hoàn thành' && status.status_name !== 'Đang giao hàng');
+
+        aggregationStages.push({
+            $match: {
+                createdAt: {
+                    $gte: new Date(parseInt(year), 0, 1),
+                    $lt: new Date(parseInt(year) + 1, 0, 1),
+                },
+                'status': { $in: notCompletedStatuses.map(status => status._id) }
+            }
+        });
+
+        if (month) {
+            aggregationStages[0].$match.createdAt = {$gte: new Date(parseInt(year), parseInt(month) - 1, 1),
                 $lt: new Date(parseInt(year), parseInt(month), 1),
             };
         }
