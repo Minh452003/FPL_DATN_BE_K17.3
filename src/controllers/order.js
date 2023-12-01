@@ -7,6 +7,7 @@ const { createHmac } = await import('node:crypto');
 import { request } from 'https';
 import paypal from 'paypal-rest-sdk'
 import axios from "axios";
+import { sendOrderEmail } from "./auth.js";
 
 export const getOrderByUserId = async (req, res) => {
     try {
@@ -310,6 +311,8 @@ export const createOrder = async (req, res) => {
             }
 
             const order = await Order.create(body);
+            const orderIdString = order._id.toString();
+            await sendOrderEmail({ userId: body.userId, orderId: orderIdString });
             if (!order) {
                 return res.status(404).json({
                     error: "Đặt hàng thất bại"
@@ -351,6 +354,27 @@ export const updateOrder = async (req, res) => {
         }
         return res.status(200).json({
             message: "Cập nhật đơn hàng thành công",
+            orderUpdateSuccess: order
+        })
+    } catch (error) {
+        return res.status(400).json({
+            message: error.message
+        })
+    }
+}
+
+export const updateOrderStatus = async (req, res) => {
+    try {
+        const id = req.params.id;
+        const body = req.body;
+        const order = await Order.findByIdAndUpdate(id, body, { new: true })
+        if (!order) {
+            return res.status(404).json({
+                message: "Đơn hàng không tồn tại"
+            })
+        }
+        return res.status(200).json({
+            message: "Huỷ đơn hàng thành công",
             orderUpdateSuccess: order
         })
     } catch (error) {

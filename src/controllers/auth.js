@@ -1,5 +1,9 @@
 import bcrypt from "bcryptjs";
 import Auth from "../models/auth.js";
+import Order from "../models/orders.js"
+import Color from "../models/colors.js";
+import Size from "../models/size.js";
+import Material from "../models/materials.js";
 import {
     signinSchema,
     signupSchema,
@@ -560,4 +564,98 @@ export const refreshToken = async (req, res) => {
             message: error.message,
         });
     }
+};
+
+const formatCurrency = (number) => {
+    if (typeof number !== 'number') {
+        // Xử lý khi number không phải là số
+        return '0'; // Hoặc giá trị mặc định khác tùy vào yêu cầu của bạn
+    }
+    return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+};
+// Hàm gửi gmail xác minh
+export const sendOrderEmail = async ({ userId, orderId }) => {
+    const mailTransporter = nodemailer.createTransport({
+        service: "gmail",
+        auth: {
+            user: process.env.MAIL_USERNAME,
+            pass: process.env.MAIL_PASSWORD,
+        },
+    });
+    const currentUser = await Auth.findById(userId);
+    const currentOrder = await Order.findById(orderId);
+    const currentColor = await Color.find();
+    const currentSize = await Size.find();
+    const currentMaterial = await Material.find();
+    const colorMap = {};
+    currentColor.forEach(color => {
+        colorMap[color._id] = color.colors_name;
+    });
+    const sizeMap = {};
+    currentSize.forEach(size => {
+        sizeMap[size._id] = size.size_name;
+    });
+    const materialMap = {};
+    currentMaterial.forEach(material => {
+        materialMap[material._id] = material.material_name;
+    });
+    // Soạn nội dung thư
+    const details = {
+        from: process.env.MAIL_USERNAME,
+        to: currentUser.email,
+        subject: "📲 Đặt hàng thành công Casa Furniture",
+        html:
+            `
+            <h1>Cảm ơn bạn đặt hàng ở Casa ^.^ </h1>
+            <p>Xin chào <b>${currentUser.first_name} ${currentUser.last_name},</b></p>
+            <table border="1" cellspacing="0" cellpadding="10" style="border-collapse: collapse; width: 100%;">
+    <thead>
+        <tr style="background-color: #f2f2f2;">
+            <th style="border: 1px solid #dddddd; text-align: left; padding: 8px;">Tên sản phẩm</th>
+            <th style="border: 1px solid #dddddd; text-align: left; padding: 8px;">Ảnh sản phẩm</th>
+            <th style="border: 1px solid #dddddd; text-align: left; padding: 8px;">Giá</th>
+            <th style="border: 1px solid #dddddd; text-align: left; padding: 8px;">Số lượng</th>
+            <th style="border: 1px solid #dddddd; text-align: left; padding: 8px;">Màu</th>
+            <th style="border: 1px solid #dddddd; text-align: left; padding: 8px;">Kích thước</th>
+            <th style="border: 1px solid #dddddd; text-align: left; padding: 8px;">Chất liệu</th>
+        </tr>
+    </thead>
+    <tbody>
+        ${currentOrder.products.map((product) => {
+                const colorName = colorMap[product.colorId] || 'Unknown Color';
+                const sizeName = sizeMap[product.sizeId] || 'Unknown Color';
+                const materialName = materialMap[product.materialId] || 'Unknown Color';
+                return `
+                <tr style="border: 1px solid #dddddd;"><td style="border: 1px solid #dddddd; text-align: left; padding: 8px;">${product.product_name}</td>
+                <td style="border: 1px solid #dddddd; text-align: center; padding: 8px;"><img src="${product.image}" alt="product_image" width="60" style="display: block;"></td>
+                <td style="border: 1px solid #dddddd; text-align: left; padding: 8px;">${formatCurrency(product.product_price)}đ</td>
+                <td style="border: 1px solid #dddddd; text-align: left; padding: 8px;">${product.stock_quantity}</td>
+                <td style="border: 1px solid #dddddd; text-align: left; padding: 8px;">${colorName}</td>
+                <td style="border: 1px solid #dddddd; text-align: left; padding: 8px;">${sizeName}</td>
+                <td style="border: 1px solid #dddddd; text-align: left; padding: 8px;">${materialName}</td>
+            </tr>
+        `;
+        }).join('')}
+</tbody>
+</table>
+        <p>Tổng tiền: <b>${formatCurrency(currentOrder.total)}đ</b></p>
+        <p>Phí vận chuyển: <b>${formatCurrency(currentOrder.shipping)}đ</b></p>
+        <p>Số tiền đã cọc: <b>${formatCurrency(currentOrder.deposit)}đ</b></p>
+        <p>Số điện thoại: ${currentOrder.phone}</p>
+        <p>Địa chỉ: ${currentOrder.address}</p>
+        <p>Cảm ơn bạn đã tin tưởng và ủng hộ Casa. Chúng tôi hy vọng sản phẩm mà bạn đã chọn sẽ mang lại sự hài lòng và tiện ích cho cuộc sống hàng ngày của bạn !</p>
+        <p>Mọi góp ý và phản hồi bạn liên hệ dưới đây: </p>
+        <p>Gmail: casanoithat@gmail.com</p>
+        <p>Hotline: 0969085244</p>
+    `,
+};
+
+// Gửi email 
+mailTransporter.sendMail(details, (err) => {
+    if (err) {
+        console.log("Lỗi khi gửi gmail", err);
+    } else {
+        console.log("Gửi gmail thành công!");
+    }
+})
 };

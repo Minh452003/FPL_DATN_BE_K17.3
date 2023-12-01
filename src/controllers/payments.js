@@ -9,6 +9,7 @@ import CryptoJS from "crypto-js";
 import axios from 'axios';
 import moment from 'moment';
 import Cart from '../models/cart.js'
+import { sendOrderEmail } from './auth.js';
 
 export const PayMomo = (req, res) => {
     const accessKey = 'F8BBA842ECF85';
@@ -186,7 +187,9 @@ export const MomoSuccess = async (req, res) => {
             await product.save();
         }
     }
-    await Order.create(formattedData);
+    const order = await Order.create(formattedData);
+    const orderIdString = order._id.toString();
+    await sendOrderEmail({ userId: userId, orderId: orderIdString });
 
     const cartExist = await Cart.findOne({ userId });
     cartExist.products = []; // Xoá tất cả sản phẩm trong giỏ hàng
@@ -385,7 +388,9 @@ export const PayPalSuccess = (req, res) => {
             cartExist.total = 0;// Đặt tổng giá trị về 0
             cartExist.couponId = null
             await cartExist.save();
-            await Order.create(formattedData);
+            const order = await Order.create(formattedData);
+            const orderIdString = order._id.toString();
+            await sendOrderEmail({ userId: userId, orderId: orderIdString });               
             res.redirect('http://localhost:5173/user/orders'); // Thay đổi '/other-page' thành URL của trang khác
         }
     });
@@ -477,7 +482,9 @@ export const depositSuccess = async (req, res) => {
             await product.save();
         }
     }
-    await Order.create(formattedData);
+    const order = await Order.create(formattedData);
+    const orderIdString = order._id.toString();
+    await sendOrderEmail({ userId: userId, orderId: orderIdString });
     const cartExist = await Cart.findOne({ userId });
     cartExist.products = []; // Xoá tất cả sản phẩm trong giỏ hàng
     cartExist.total = 0;// Đặt tổng giá trị về 0
@@ -597,7 +604,9 @@ export const depositPaypal = async (req, res) => {
             cartExist.total = 0;// Đặt tổng giá trị về 0
             cartExist.couponId = null
             await cartExist.save();
-            await Order.create(formattedData);
+            const order = await Order.create(formattedData);
+            const orderIdString = order._id.toString();
+            await sendOrderEmail({ userId: userId, orderId: orderIdString });
             res.redirect('http://localhost:5173/user/orders'); // Thay đổi '/other-page' thành URL của trang khác
         }
     });
