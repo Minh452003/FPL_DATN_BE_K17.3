@@ -8,7 +8,7 @@
     "node": "18.x"
   },
   "scripts": {
-    "dev": "vite",
+    "dev": "vite -- --host",
     "build": "esbuild",
     "start": "nodemon src/app.js"
   },
@@ -53,12 +53,14 @@
     "mongoose-paginate-v2": "^1.7.1",
     "multer": "^1.4.5-lts.1",
     "multer-storage-cloudinary": "^4.0.0",
+    "node-notifier": "^10.0.1",
     "nodemailer": "^6.9.4",
     "passport": "^0.6.0",
     "passport-facebook": "^3.0.0",
     "passport-google-oauth2": "^0.2.0",
     "paypal-rest-sdk": "^1.8.1",
     "qs": "^6.11.2",
-    "stripe": "^13.10.0"
+    "stripe": "^13.10.0",
+    "validator": "^13.11.0"
   }
 }
