@@ -8,6 +8,7 @@ import { request } from 'https';
 import paypal from 'paypal-rest-sdk'
 import axios from "axios";
 import { sendOrderEmail } from "./auth.js";
+import notifier from "node-notifier";
 
 export const getOrderByUserId = async (req, res) => {
     try {
@@ -313,12 +314,15 @@ export const createOrder = async (req, res) => {
             const order = await Order.create(body);
             const orderIdString = order._id.toString();
             await sendOrderEmail({ userId: body.userId, orderId: orderIdString });
+            notifier.notify({
+                title: "ÔNG CHỦ ƠI, CÓ ĐƠN HÀNG MỚI",
+                message: "Bạn có đơn hàng mới!"
+            })
             if (!order) {
                 return res.status(404).json({
                     error: "Đặt hàng thất bại"
                 })
             }
-
             return res.status(200).json({
                 message: "Đặt hàng thành công",
                 order

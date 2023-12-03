@@ -101,12 +101,12 @@ export const removeForceContact = async (req, res) => {
 
 export const addContact = async (req, res) => {
     try {
-        const { contact_name } = req.body;
+        const { contact_email } = req.body;
         const formData = req.body;
-        const data = await Contact.findOne({ contact_name });
+        const data = await Contact.findOne({ contact_email });
         if (data) {
             return res.status(400).json({
-                message: "Liên hệ đã tồn tại",
+                message: "Email liên hệ đã tồn tại",
             });
         }
         const { error } = ContactSchema.validate(formData, { abortEarly: false });
