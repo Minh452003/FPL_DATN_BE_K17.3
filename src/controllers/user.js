@@ -139,12 +139,10 @@ export const changePassword = async (req, res) => {
 }
 
 
-
-// Gửi mã OTP user
+// Gửi mã OTP user (Forgot Password)
 export const sendOTPVerificationEmail = async ({ _id, email }) => {
     try {
         const otp = `${Math.floor(100000 + Math.random() * 900000)}`.slice(0, 6);
-
         const mailTransporter = nodemailer.createTransport({
             service: "gmail",
             auth: {
@@ -159,9 +157,7 @@ export const sendOTPVerificationEmail = async ({ _id, email }) => {
             to: email,
             subject: "Nội thất Casa OTP Forgot Password",
             html: `
-            <p>Vui lòng sử dụng mã OTP để đặt lại mật khẩu : <span><b>${otp}</b></span></p>
-            `
-            ,
+            <p>Vui lòng sử dụng mã OTP để đặt lại mật khẩu : <span><b>${otp}</b></span></p>`,
         };
 
         //Hash mã OTP
@@ -189,38 +185,6 @@ export const sendOTPVerificationEmail = async ({ _id, email }) => {
                 email,
             },
         };
-    } catch (error) {
-        return res.status(400).json({
-            message: error.message,
-        });
-    }
-};
-
-// Gửi lại mã OTP 
-export const sendNewOtp = async (req, res) => {
-    try {
-        const { userId, email } = req.body;
-        if (!userId || !email) {
-            return res.status(400).json({
-                message: "Không được để trống userId và email ",
-            });
-        }
-        const emailCheck = await Auth.findOne({ email })
-        if (!emailCheck) {
-            return res.status(400).json({
-                message: "Email không tồn tại"
-            })
-        } else {
-            await userOtpVerification.deleteMany({ userId });
-            const otpResponse = await sendOTPVerificationEmail({
-                _id: userId,
-                email,
-            });
-            return res.status(200).json({
-                message: "Gửi lại mã OTP thành công",
-                otpResponse, // Thêm thông tin về OTP vào phản hồi
-            });
-        }
     } catch (error) {
         return res.status(400).json({
             message: error.message,
