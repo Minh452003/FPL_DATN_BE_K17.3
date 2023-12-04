@@ -315,7 +315,7 @@ export const sendOTPVerificationEmail = async ({ _id, email }) => {
             userId: _id,
             otp: hashedOTP,
             createdAt: Date.now(),
-            expiresAt: Date.now() + 3600000,
+            expiresAt: Date.now() + 180000,
         });
 
         await newOTPVerification.save();
@@ -358,7 +358,8 @@ export const sendNewVerificationEmail = async ({ _id, email }) => {
             to: email,
             subject: "Nội thất Casa Rensend OTP ",
             html:
-                `<p>Vui lòng sử dụng mã OTP mới và mã sẽ hết hạn sau : <span><b>${otp}</b></span></p> `,
+                `<p>Vui lòng sử dụng mã OTP mới và mã sẽ hết hạn sau 3 phút : <span><b>${otp}</b></span></p> `,
+
         };
 
         //Hash mã OTP
@@ -370,7 +371,7 @@ export const sendNewVerificationEmail = async ({ _id, email }) => {
             userId: _id,
             otp: hashedOTP,
             createdAt: Date.now(),
-            expiresAt: Date.now() + 3600000,
+            expiresAt: Date.now() + 180000,
         });
 
         await newOTPVerification.save();
