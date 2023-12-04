@@ -4,11 +4,7 @@ import Order from "../models/orders.js"
 import Color from "../models/colors.js";
 import Size from "../models/size.js";
 import Material from "../models/materials.js";
-import {
-    signinSchema,
-    signupSchema,
-    updateUserSchema,
-} from "../schemas/auth.js";
+import { signinSchema, signupSchema, updateUserSchema } from "../schemas/auth.js";
 import jwt from "jsonwebtoken";
 import nodemailer from "nodemailer";
 import AuthOTPVerification from "../models/authOtpVerification.js";
@@ -319,7 +315,7 @@ export const sendOTPVerificationEmail = async ({ _id, email }) => {
             userId: _id,
             otp: hashedOTP,
             createdAt: Date.now(),
-            expiresAt: Date.now() + 3600000,
+            expiresAt: Date.now() + 180000,
         });
 
         await newOTPVerification.save();
@@ -330,6 +326,61 @@ export const sendOTPVerificationEmail = async ({ _id, email }) => {
         return {
             status: "Success",
             message: "Verification otp email send",
+            data: {
+                userId: _id,
+                email,
+            },
+        };
+    } catch (error) {
+        return res.status(400).json({
+            message: error.message,
+        });
+    }
+};
+
+
+// Hàm xác minh gửi mã OTP
+export const sendNewVerificationEmail = async ({ _id, email }) => {
+    try {
+        const otp = `${Math.floor(100000 + Math.random() * 900000)}`.slice(0, 6);
+
+        const mailTransporter = nodemailer.createTransport({
+            service: "gmail",
+            auth: {
+                user: process.env.MAIL_USERNAME,
+                pass: process.env.MAIL_PASSWORD,
+            },
+        });
+
+        // Mail Options
+        const mailOptions = {
+            from: process.env.MAIL_USERNAME,
+            to: email,
+            subject: "Nội thất Casa Rensend OTP ",
+            html:
+                `<p>Vui lòng sử dụng mã OTP mới và mã sẽ hết hạn sau 3 phút : <span><b>${otp}</b></span></p> `,
+        };
+
+        //Hash mã OTP
+        const saltRounds = 10;
+        const hashedOTP = await bcrypt.hash(otp, saltRounds);
+
+        // Lưu OTP vào cơ sở dữ liệu
+        const newOTPVerification = new AuthOTPVerification({
+            userId: _id,
+            otp: hashedOTP,
+            createdAt: Date.now(),
+            expiresAt: Date.now() + 180000,
+        });
+
+        await newOTPVerification.save();
+
+        // Gửi gmail chứa mã OTP
+        await mailTransporter.sendMail(mailOptions);
+        // Trả về phản hồi thành công
+        return {
+            status: "Success",
+            message: "Resend OTP Email",
             data: {
                 userId: _id,
                 email,
@@ -358,13 +409,13 @@ export const sendNewOtp = async (req, res) => {
             })
         } else {
             await AuthOTPVerification.deleteMany({ userId });
-            const otpResponse = await sendOTPVerificationEmail({
+            const otpResponse = await sendNewVerificationEmail({
                 _id: userId,
                 email,
             });
             return res.status(200).json({
                 message: "Gửi lại mã OTP thành công",
-                otpResponse, // Them thông tin về OTP vào phản hồi
+                otpResponse, // Thêm thông tin về OTP vào phản hồi
             });
         }
     } catch (error) {
@@ -411,7 +462,6 @@ export const verifyOTP = async (req, res) => {
                         await sendVerificationEmail(userId);
                         await Auth.updateOne({ _id: userId }, { verified: true });
                         await AuthOTPVerification.deleteMany({ userId });
-
                         return res.status(200).json({
                             message: "Xác minh email của người dùng thành công!"
                         })
@@ -444,7 +494,7 @@ const sendVerificationEmail = async (userId) => {
         subject: "📲 Đăng kí thành công Casa Furniture",
         html:
             `
-            <h1>Chào mừng bạn đến với Casa ^.^ </h1>
+            <h1>Chào mừng bạn đến với Casa! </h1>
             <p>Xin chào <b>${currentUser.first_name} ${currentUser.last_name},</b></p>
             <p>Chúc mừng bạn đã đăng ký tài khoản thành công. Chúng tôi rất vui mừng chào đón bạn vào cộng đồng của chúng tôi.</p>
             <img src="https://res.cloudinary.com/dkvghcobl/image/upload/v1700052990/hby7nyozorvpib8k7z9h.png" alt="Casa Logo">
@@ -573,7 +623,7 @@ const formatCurrency = (number) => {
     }
     return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
 };
-// Hàm gửi gmail xác minh
+// Hàm gửi gmail xác minh Order thành công
 export const sendOrderEmail = async ({ userId, orderId }) => {
     const mailTransporter = nodemailer.createTransport({
         service: "gmail",
@@ -635,7 +685,7 @@ export const sendOrderEmail = async ({ userId, orderId }) => {
                 <td style="border: 1px solid #dddddd; text-align: left; padding: 8px;">${materialName}</td>
             </tr>
         `;
-        }).join('')}
+            }).join('')}
 </tbody>
 </table>
         <p>Tổng tiền: <b>${formatCurrency(currentOrder.total)}đ</b></p>
@@ -648,14 +698,14 @@ export const sendOrderEmail = async ({ userId, orderId }) => {
         <p>Gmail: casanoithat@gmail.com</p>
         <p>Hotline: 0969085244</p>
     `,
-};
+    };
 
-// Gửi email 
-mailTransporter.sendMail(details, (err) => {
-    if (err) {
-        console.log("Lỗi khi gửi gmail", err);
-    } else {
-        console.log("Gửi gmail thành công!");
-    }
-})
+    // Gửi email 
+    mailTransporter.sendMail(details, (err) => {
+        if (err) {
+            console.log("Lỗi khi gửi gmail", err);
+        } else {
+            console.log("Gửi gmail thành công!");
+        }
+    })
 };

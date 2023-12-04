@@ -36,7 +36,7 @@ export const forgotPassword = async (req, res) => {
             message: error.message
         })
     }
-}
+};
 
 // Đặt lại mật khẩu
 export const resetPassword = async (req, res) => {
@@ -84,7 +84,7 @@ export const resetPassword = async (req, res) => {
             message: error.message
         })
     }
-}
+};
 
 // Thay đổi mật khẩu
 export const changePassword = async (req, res) => {
@@ -136,15 +136,12 @@ export const changePassword = async (req, res) => {
             message: error.message
         })
     }
-}
+};
 
-
-
-// Gửi mã OTP user
+// Gửi mã OTP user (Forgot Password)
 export const sendOTPVerificationEmail = async ({ _id, email }) => {
     try {
         const otp = `${Math.floor(100000 + Math.random() * 900000)}`.slice(0, 6);
-
         const mailTransporter = nodemailer.createTransport({
             service: "gmail",
             auth: {
@@ -159,9 +156,7 @@ export const sendOTPVerificationEmail = async ({ _id, email }) => {
             to: email,
             subject: "Nội thất Casa OTP Forgot Password",
             html: `
-            <p>Vui lòng sử dụng mã OTP để đặt lại mật khẩu : <span><b>${otp}</b></span></p>
-            `
-            ,
+            <p>Vui lòng sử dụng mã OTP để đặt lại mật khẩu : <span><b>${otp}</b></span></p>`,
         };
 
         //Hash mã OTP
@@ -173,7 +168,7 @@ export const sendOTPVerificationEmail = async ({ _id, email }) => {
             userId: _id,
             otp: hashedOTP,
             createdAt: Date.now(),
-            expiresAt: Date.now() + 180000,
+            expiresAt: Date.now() + 1800000,
         });
 
         await newOTPVerification.save();
@@ -183,44 +178,12 @@ export const sendOTPVerificationEmail = async ({ _id, email }) => {
         // Trả về phản hồi thành công
         return {
             status: "Success",
-            message: "Verification otp email send",
+            message: "Gửi mã OTP Forgot Password về gmail thành công, vui lòng kiểm tra email !",
             data: {
                 userId: _id,
                 email,
             },
         };
-    } catch (error) {
-        return res.status(400).json({
-            message: error.message,
-        });
-    }
-};
-
-// Gửi lại mã OTP 
-export const sendNewOtp = async (req, res) => {
-    try {
-        const { userId, email } = req.body;
-        if (!userId || !email) {
-            return res.status(400).json({
-                message: "Không được để trống userId và email ",
-            });
-        }
-        const emailCheck = await Auth.findOne({ email })
-        if (!emailCheck) {
-            return res.status(400).json({
-                message: "Email không tồn tại"
-            })
-        } else {
-            await userOtpVerification.deleteMany({ userId });
-            const otpResponse = await sendOTPVerificationEmail({
-                _id: userId,
-                email,
-            });
-            return res.status(200).json({
-                message: "Gửi lại mã OTP thành công",
-                otpResponse, // Thêm thông tin về OTP vào phản hồi
-            });
-        }
     } catch (error) {
         return res.status(400).json({
             message: error.message,
@@ -277,6 +240,92 @@ export const verifyOTPResetPassword = async (req, res) => {
                     }
                 }
             }
+        }
+    } catch (error) {
+        return res.status(400).json({
+            message: error.message,
+        });
+    }
+};
+
+// Hàm xác minh gửi mã quên mật khẩu OTP
+export const sendNewVerificationForgotPassword = async ({ _id, email }) => {
+    try {
+        const otp = `${Math.floor(100000 + Math.random() * 900000)}`.slice(0, 6);
+
+        const mailTransporter = nodemailer.createTransport({
+            service: "gmail",
+            auth: {
+                user: process.env.MAIL_USERNAME,
+                pass: process.env.MAIL_PASSWORD,
+            },
+        });
+
+        // Mail Options
+        const mailOptions = {
+            from: process.env.MAIL_USERNAME,
+            to: email,
+            subject: "Nội thất Casa Rensend OTP Forgot Password ",
+            html:
+                `<p>Vui lòng sử dụng mã OTP mới để thay đổi mật khẩu và mã sẽ hết hạn sau 3 phút : <span><b>${otp}</b></span></p> `,
+        };
+
+        //Hash mã OTP
+        const saltRounds = 10;
+        const hashedOTP = await bcrypt.hash(otp, saltRounds);
+
+        // Lưu OTP vào cơ sở dữ liệu
+        const newOTPVerification = new UserOTPVerification({
+            userId: _id,
+            otp: hashedOTP,
+            createdAt: Date.now(),
+            expiresAt: Date.now() + 1800000,
+        });
+
+        await newOTPVerification.save();
+
+        // Gửi gmail chứa mã OTP
+        await mailTransporter.sendMail(mailOptions);
+        // Trả về phản hồi thành công
+        return {
+            status: "Success",
+            message: "Resend OTP Forgot Password Email",
+            data: {
+                userId: _id,
+                email,
+            },
+        };
+    } catch (error) {
+        return res.status(400).json({
+            message: error.message,
+        });
+    }
+};
+
+// Gửi lại mã quên mật khẩu OTP
+export const sendNewForgotOTP = async (req, res) => {
+    try {
+        const { userId, email } = req.body;
+        if (!userId || !email) {
+            return res.status(400).json({
+                message: "Không được để trống userId và email ",
+            });
+        }
+        const emailCheck = await Auth.findOne({ email })
+        if (!emailCheck) {
+            return res.status(400).json({
+                message: "Email không tồn tại"
+            })
+        } else {
+            await UserOTPVerification.deleteMany({ userId });
+            const otpResponse = await sendNewVerificationForgotPassword({
+                _id: userId,
+                email,
+            });
+            return res.status(200).json({
+                message: "Gửi lại mã OTP Forgot Password thành công",
+                otpResponse, // Thêm thông tin về OTP vào phản hồi
+            });
         }
     } catch (error) {
         return res.status(400).json({
