@@ -3,7 +3,6 @@ import { getAll, getOneById, logout, refreshToken, removebyAdmin, removebyUser, 
 import { authorization } from "../middlewares/authorization.js";
 import { authenticate } from "../middlewares/authenticate.js";
 
-
 const routerAuth = express.Router();
 
 routerAuth.get("/users", getAll);

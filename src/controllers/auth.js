@@ -359,6 +359,7 @@ export const sendNewVerificationEmail = async ({ _id, email }) => {
             subject: "Nội thất Casa Rensend OTP ",
             html:
                 `<p>Vui lòng sử dụng mã OTP mới và mã sẽ hết hạn sau 3 phút : <span><b>${otp}</b></span></p> `,
+
         };
 
         //Hash mã OTP
