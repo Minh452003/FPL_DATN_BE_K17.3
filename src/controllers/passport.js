@@ -117,5 +117,5 @@ passport.use(new FacebookStrategy({
 ));
 export const LoginWithFacebook = (req, res) => {
     const { accessToken } = req.user;
-    res.redirect(`http://localhost:5173/success/?token=${accessToken}`);
+    res.redirect(`http://localhost:5173?token=${accessToken}`);
 }

@@ -13,7 +13,7 @@ import notifier from "node-notifier";
 export const getOrderByUserId = async (req, res) => {
     try {
         const id = req.params.userId
-        const order = await Order.find({ userId: id }).populate('products.productId status');
+        const order = await Order.find({ userId: id }).populate('products.productId status').sort({ createdAt: -1 });
         return res.status(200).json({
             message: "Lấy thông tin người dùng đặt hàng thành công",
             order

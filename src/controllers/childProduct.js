@@ -6,7 +6,7 @@ export const listChildProducts = async (req, res) => {
     try {
         const productId = req.params.productId; // Lấy userId từ yêu cầu URL
         // Truy vấn cơ sở dữ liệu để tìm tất cả sản phẩm tự thiết kế của người dùng
-        const product = await ChildProduct.find({ productId });
+        const product = await ChildProduct.find({ productId }).sort({ createdAt: -1 });;
         if (!product || product.length === 0) {
             return res.status(404).json({
                 message: 'Không tìm thấy sản phẩm con của sản phẩm này',

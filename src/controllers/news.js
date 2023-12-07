@@ -4,7 +4,7 @@ import { newsSchema } from "../schemas/news.js";
 
 export const getAllNews = async (req, res) => {
   const {
-    _limit = 10,
+    _limit = 100,
     _sort = "createAt",
     _order = "asc",
     _page = 1,
