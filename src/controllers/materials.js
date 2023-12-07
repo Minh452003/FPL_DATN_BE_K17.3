@@ -6,11 +6,11 @@ export const getMaterialList = async (req, res) => {
         const material = await Material.find();
         if (material.length === 0) {
             return res.status(404).json({
-                message: 'Lấy tất cả chất liệu thất bại',
+                message: 'Lấy tất cả vật liệu thất bại',
             });
         }
         return res.status(200).json({
-            message: " Lấy tất cả màu thành công",
+            message: " Lấy tất cả vật liệu thành công",
             material
         });
     } catch (error) {
@@ -33,17 +33,17 @@ export const createMaterial = async (req, res) => {
         const data = await Material.findOne({ material_name });
         if (data) {
             return res.status(400).json({
-                message: "Tên chất liệu đã tồn tại",
+                message: "Tên vật liệu đã tồn tại",
             });
         }
         const material = await Material.create(req.body);
         if (!material) {
             return res.status(400).json({
-                message: 'Thêm chất liệu thất bại',
+                message: 'Thêm vật liệu thất bại',
             });
         }
         return res.status(200).json({
-            message: 'Thêm chất liệu thành công',
+            message: 'Thêm vật liệu thành công',
             material,
         });
     } catch (error) {
@@ -62,7 +62,7 @@ export const updateMaterial = async (req, res) => {
         const data = await Material.findOne({ material_name, _id: { $ne: id } });
         if (data) {
             return res.status(400).json({
-                message: "Tên chất liệu đã tồn tại",
+                message: "Tên vật liệu đã tồn tại",
             });
         }
         const { error } = materialSchema.validate(body, { abortEarly: false });
@@ -75,11 +75,11 @@ export const updateMaterial = async (req, res) => {
         const material = await Material.findByIdAndUpdate(id, body, { new: true, });
         if (!material) {
             return res.status(404).json({
-                message: 'Cập nhật chất liệu thất bại',
+                message: 'Cập nhật vật liệu thất bại',
             });
         }
         return res.status(200).json({
-            message: "Cập nhật chất liệu thành công",
+            message: "Cập nhật vật liệu thành công",
             material
         })
     } catch (error) {
@@ -94,7 +94,7 @@ export const removeMaterial = async (req, res) => {
     try {
         const material = await Material.findByIdAndDelete(req.params.id);
         return res.status(200).json({
-            message: 'Xóa chất liệu thành công',
+            message: 'Xóa vật liệu thành công',
             material
         });
     } catch (error) {
@@ -111,11 +111,11 @@ export const getMaterial = async (req, res) => {
         const material = await Material.findById(id);
         if (material.length === 0) {
             return res.status(400).json({
-                message: "Không có chất liệu!",
+                message: "Không có vật liệu!",
             })
         }
         return res.status(200).json({
-            message: "Lấy 1 chất liệu thành công",
+            message: "Lấy 1 vật liệu thành công",
             material
         });
     } catch (error) {

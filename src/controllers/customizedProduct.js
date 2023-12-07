@@ -32,11 +32,11 @@ export const getAllCustomProduct = async (req, res) => {
         const customProduct = await CustomizedProduct.find();
         if (customProduct.length === 0) {
             return res.status(404).json({
-                message: 'Lấy tất cả san pham tu thiet ke thất bại',
+                message: 'Lấy tất cả sản phẩmm tự thiết kế thất bại',
             });
         }
         return res.status(200).json({
-            message: " Lấy tất cả san pham tu thiet ke thành công",
+            message: " Lấy tất cả sản phẩm tự thiết kế thành công",
             customProduct
         });
     } catch (error) {
@@ -126,7 +126,7 @@ export const remove = async (req, res) => {
             await product.delete()
         }
         return res.status(200).json({
-            message: "Xoá sản phẩm tự thiết kế thành công.chuyển sang thùng rác",
+            message: "Xoá sản phẩm tự thiết kế thành công.Chuyển sang thùng rác",
             product
         })
     } catch (error) {
@@ -140,7 +140,7 @@ export const removeForce = async (req, res) => {
     try {
         const product = await CustomizedProduct.deleteOne({ _id: req.params.id });
         return res.status(200).json({
-            message: "Xoá sản phẩm vĩnh viễn",
+            message: "Xoá sản phẩm tự thiết kế vĩnh viễn",
             product
         })
     } catch (error) {
