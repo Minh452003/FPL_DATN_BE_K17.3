@@ -75,7 +75,7 @@ export const resetPassword = async (req, res) => {
         const hashedPassword = await bcrypt.hash(newPassword, 10);
         await Auth.updateOne({ _id: userId }, { password: hashedPassword, passwordChanged: false })
         return res.status(200).json({
-            message: "Thay đổi mật khẩu thành công, vui lòng đăng nhập",
+            message: "Thay đổi mật khẩu thành công, có thể đăng nhập",
             user
 
         })
@@ -179,7 +179,7 @@ export const sendOTPVerificationEmail = async ({ _id, email }) => {
         // Trả về phản hồi thành công
         return {
             status: "Success",
-            message: "Gửi mã OTP Forgot Password về gmail thành công, vui lòng kiểm tra email !",
+            message: "Gửi mã OTP về gmail, vui lòng kiểm tra email !",
             data: {
                 userId: _id,
                 email,
@@ -235,7 +235,7 @@ export const verifyOTPResetPassword = async (req, res) => {
                             })
                         }
                         return res.status(200).json({
-                            message: "Xác minh email của người dùng thành công! Vui lòng đặt lại mật khẩu mới",
+                            message: "Xác minh email thành công! Vui lòng đặt lại mật khẩu mới",
                             user
                         })
                     }

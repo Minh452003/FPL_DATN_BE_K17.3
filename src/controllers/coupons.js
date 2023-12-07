@@ -52,7 +52,7 @@ export const getOneCoupons = async (req, res) => {
 
 export const getAllCoupons = async (req, res) => {
     try {
-        const coupon = await Coupon.find();
+        const coupon = await Coupon.find().sort({ createdAt: -1 });
         if (!coupon) {
             return res.status(404).json({
                 message: "Lấy tất cả phiếu giảm giá thất bại"
