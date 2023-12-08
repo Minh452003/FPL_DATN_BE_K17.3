@@ -113,6 +113,22 @@ export const getChildProductPrice = async (req, res) => {
     try {
         const { productId, sizeId, colorId } = req.query;
 
+        // Kiểm tra xem có đủ các giá trị cần thiết không
+        if (!productId || !sizeId || !colorId) {
+            return res.status(200).json({
+                message: 'Thiếu thông tin sản phẩm con',
+                product: null
+            });
+        }
+
+        // Kiểm tra sizeId không phải là null hoặc undefined
+        if (sizeId === 'null' || sizeId === 'undefined' || colorId === 'null' || colorId === 'undefined') {
+            return res.status(200).json({
+                message: 'Không tìm thấy sản phẩm con dựa trên màu và size đã chọn',
+                product: null
+            });
+        }
+
         // Tìm sản phẩm con dựa trên idProduct, màu và size
         const childProduct = await ChildProduct.findOne({
             productId: productId,
@@ -121,7 +137,7 @@ export const getChildProductPrice = async (req, res) => {
         });
 
         if (!childProduct) {
-            return res.status(404).json({
+            return res.status(400).json({
                 message: 'Không tìm thấy sản phẩm con dựa trên màu và size đã chọn',
             });
         }

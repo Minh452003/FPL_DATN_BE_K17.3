@@ -10,14 +10,16 @@ import axios from 'axios';
 import moment from 'moment';
 import Cart from '../models/cart.js'
 import { sendOrderEmail } from './auth.js';
+import dotenv from "dotenv";
+dotenv.config();
 
 export const PayMomo = (req, res) => {
     const accessKey = 'F8BBA842ECF85';
     const secretKey = 'K951B6PE1waDMi640xX08PD3vg6EkVlz';
     const orderInfo = 'THANH TOÁN MOMO';
     const partnerCode = 'MOMO';
-    const redirectUrl = 'http://localhost:8088/api/momo';
-    const ipnUrl = 'http://localhost:8088/api/momo';
+    const redirectUrl = process.env.REDIRECT_MOMO;
+    const ipnUrl = process.env.REDIRECT_MOMO;
     const requestType = "payWithMethod";
     const amount = Math.floor(req.body.total + req.body.shipping)
     const orderId = partnerCode + new Date().getTime();
@@ -146,6 +148,7 @@ export const MomoSuccess = async (req, res) => {
         products: products,
         total: Number(total),
         shipping: Number(shipping),
+        status: '64e8a93da63d2db5e8d8562b',
         phone,
         address,
         notes,
@@ -197,7 +200,7 @@ export const MomoSuccess = async (req, res) => {
     cartExist.couponId = null
     await cartExist.save();
 
-    res.redirect('http://localhost:5173/user/orders');
+    res.redirect(process.env.REDIRECT_SUCCESS);
 }
 
 // 
@@ -235,8 +238,8 @@ export const PayPal = async (req, res) => {
             payment_method: 'paypal',
         },
         redirect_urls: {
-            return_url: `http://localhost:8088/api/success`,
-            cancel_url: `http://localhost:5173/carts`,
+            return_url: process.env.PAYPAL_SUCCESS,
+            cancel_url: process.env.PAYPAL_CANCEL,
         },
         transactions: [
             {
@@ -341,6 +344,7 @@ export const PayPalSuccess = (req, res) => {
                 products: productList,
                 total: totalMoney + shipping,
                 shipping: shipping,
+                status: '64e8a93da63d2db5e8d8562b',
                 phone,
                 address,
                 userId,
@@ -391,7 +395,7 @@ export const PayPalSuccess = (req, res) => {
             const order = await Order.create(formattedData);
             const orderIdString = order._id.toString();
             await sendOrderEmail({ userId: userId, orderId: orderIdString });               
-            res.redirect('http://localhost:5173/user/orders'); // Thay đổi '/other-page' thành URL của trang khác
+            res.redirect(process.env.REDIRECT_SUCCESS);
         }
     });
 }
@@ -490,7 +494,7 @@ export const depositSuccess = async (req, res) => {
     cartExist.total = 0;// Đặt tổng giá trị về 0
     cartExist.couponId = null
     await cartExist.save();
-    res.redirect('http://localhost:5173/user/orders');
+    res.redirect(process.env.REDIRECT_SUCCESS);
 }
 
 export const depositPaypal = async (req, res) => {
@@ -607,7 +611,7 @@ export const depositPaypal = async (req, res) => {
             const order = await Order.create(formattedData);
             const orderIdString = order._id.toString();
             await sendOrderEmail({ userId: userId, orderId: orderIdString });
-            res.redirect('http://localhost:5173/user/orders'); // Thay đổi '/other-page' thành URL của trang khác
+            res.redirect(process.env.REDIRECT_SUCCESS);
         }
     });
 
