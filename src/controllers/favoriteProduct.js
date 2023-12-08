@@ -5,7 +5,11 @@ export const getAllFavoriteProducts = async (req, res) => {
   try {
     const userId = req.params.id;
     // Lấy tất cả sản phẩm yêu thích cho userId cụ thể
-    const favoriteProducts = await FavoriteProduct.find({ userId: userId });
+    const favoriteProducts = await FavoriteProduct.find({ userId: userId }).populate({
+      path: 'productId',
+      select: 'product_name product_price image avatar',
+    });;
+
 
     return res.status(200).json({
       message: "Lấy tất cả các sản phẩm được yêu thích",
@@ -17,6 +21,24 @@ export const getAllFavoriteProducts = async (req, res) => {
     });
   }
 };
+
+export const getFavoriteProducts = async (req, res) => {
+  try {
+    const { productId, userId } = req.query;
+    // Lấy tất cả sản phẩm yêu thích cho userId cụ thể
+    const favoriteProducts = await FavoriteProduct.findOne({ userId: userId, productId: productId })
+
+    return res.status(200).json({
+      message: "Lấy sản phẩm được yêu thích",
+      favoriteProducts,
+    });
+  } catch (error) {
+    return res.status(400).json({
+      message: error.message,
+    });
+  }
+};
+
 export const createFavoriteProduct = async (req, res) => {
   try {
     const userId = req.params.id;
@@ -64,7 +86,7 @@ export const removeFavoriteProduct = async (req, res) => {
     }
     const data = await FavoriteProduct.findByIdAndDelete(id);
     return res.status(200).json({
-      message: "Xóa sản phẩm yêu thích thành công",
+      message: "Bỏ sản phẩm yêu thích thành công",
       data,
     });
   } catch (error) {

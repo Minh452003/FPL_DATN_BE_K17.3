@@ -2,6 +2,10 @@ import express from 'express';
 import passport from 'passport';
 import '../controllers/passport.js'
 import { LoginWithFacebook, LoginWithGoogle, LogoutGoogle } from '../controllers/passport.js';
+import dotenv from "dotenv";
+dotenv.config();
+const successRedirect = process.env.GOOGLE_SUCCESS_REDIRECT;
+const failureRedirect = process.env.GOOGLE_FAILURE_REDIRECT;
 const routerPassport = express.Router();
 
 routerPassport.get('/auth/google',
@@ -12,8 +16,8 @@ routerPassport.get('/auth/google',
     ));
 routerPassport.get('/auth/google/callback',
     passport.authenticate('google', {
-        successRedirect: `http://localhost:8088/api/google/success`,
-        failureRedirect: `http://localhost:5173/signin?signin=failure`
+        successRedirect: successRedirect,
+        failureRedirect: failureRedirect
     }));
 routerPassport.use('/auth/logout', LogoutGoogle);
 routerPassport.use('/google/success', LoginWithGoogle);

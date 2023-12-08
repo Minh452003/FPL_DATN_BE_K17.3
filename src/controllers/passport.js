@@ -4,11 +4,13 @@ import { Strategy as FacebookStrategy } from 'passport-facebook';
 import passport from 'passport';
 import Auth from "../models/auth.js";
 import jwt from 'jsonwebtoken';
+import dotenv from "dotenv";
+dotenv.config();
 
 passport.use(new GoogleStrategy({
     clientID: "563215821470-u1ptu5gn9ndnpbcqgauvk3h860pensfa.apps.googleusercontent.com",
     clientSecret: "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",
-    callbackURL: "http://localhost:8088/api/auth/google/callback",
+    callbackURL: process.env.GOOGLE_REDIRECT,
     passReqToCallback: true
 },
     async (request, accessToken, refreshToken, profile, done) => {
@@ -59,7 +61,7 @@ passport.deserializeUser(({ user, accessToken }, done) => {
 
 export const LoginWithGoogle = (req, res) => {
     const { accessToken } = req.user;
-    res.redirect(`http://localhost:5173/?token=${accessToken}`);
+    res.redirect(`${process.env.GOOGLE_SUCCESS}?token=${accessToken}`);
 }
 
 export const LogoutGoogle = (req, res) => {
