@@ -13,7 +13,7 @@ let refreshTokens = [];
 // Lấy tất cả user
 export const getAll = async (req, res) => {
     try {
-        const data = await Auth.find();
+        const data = await Auth.find().sort({ createdAt: -1 });
         return res.status(200).json({
             message: "Lấy tất cả người dùng thành công",
             data,

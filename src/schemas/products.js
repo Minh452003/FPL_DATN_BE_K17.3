@@ -6,10 +6,11 @@ export const ProductSchema = Joi.object({
         "string.empty": "Tên sản phẩm bắt buộc nhập",
         "any.required": "Trường tên sản phẩm bắt buộc nhập"
     }),
-    product_price: Joi.number().required().messages({
+    product_price: Joi.number().min(1000).required().messages({
         "number.empty": "Giá sản phẩm bắt buộc nhập",
         "any.required": "Trường giá sản phẩm bắt buộc nhập",
-        "number.base": "Giá sản phẩm phải là số"
+        "number.base": "Giá sản phẩm phải là số",
+        'number.min': 'Giá ít nhất phải là 1000đ.'
     }),
     image: Joi.array().required().messages({
         "any.required": "Trường ảnh sản phẩm bắt buộc nhập"

@@ -13,8 +13,9 @@ export const cartSchema = Joi.object({
   image: Joi.string().messages({
     'string.base': 'image phải là một chuỗi.',
   }),
-  stock_quantity: Joi.number().messages({
-    'number.base': 'stock_quantity phải là một số.',
+  stock_quantity: Joi.number().min(1).messages({
+    'number.base': 'Phải chọn số lượng sản phẩm mua.',
+    'number.min': 'Số lượng ít nhất phải là 1.'
   }),
   originalPrice: Joi.number().messages({
     'number.base': 'originalPrice phải là một số.',

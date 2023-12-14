@@ -8,7 +8,7 @@ export const getAllFavoriteProducts = async (req, res) => {
     const favoriteProducts = await FavoriteProduct.find({ userId: userId }).populate({
       path: 'productId',
       select: 'product_name product_price image avatar',
-    });;
+    }).sort({ createdAt: -1 });
 
 
     return res.status(200).json({

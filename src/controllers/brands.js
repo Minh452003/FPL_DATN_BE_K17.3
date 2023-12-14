@@ -4,7 +4,7 @@ import { BrandSchema } from '../schemas/brands.js';
 
 export const getAllBrands = async (req, res) => {
   try {
-    const brand = await Brand.find();
+    const brand = await Brand.find().sort({ createdAt: -1 });
     if (brand.length === 0) {
       return res.status(404).json({
         message: 'Không có thương hiệu nào',

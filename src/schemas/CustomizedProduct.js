@@ -12,18 +12,20 @@ export const CustomizedProductSchema = Joi.object({
         "string.empty": "Tên sản phẩm bắt buộc nhập",
         "any.required": "Trường tên sản phẩm bắt buộc nhập"
     }),
-    product_price: Joi.number().required().messages({
+    product_price: Joi.number().min(1000).required().messages({
         "number.empty": "Giá sản phẩm bắt buộc nhập",
         "any.required": "Trường giá sản phẩm bắt buộc nhập",
-        "number.base": "Giá sản phẩm phải là số"
+        "number.base": "Giá sản phẩm phải là số",
+        'number.min': 'Giá ít nhất phải là 1000đ.'
     }),
     image: Joi.array().required().messages({
         "any.required": "Trường ảnh sản phẩm bắt buộc nhập"
     }),
-    stock_quantity: Joi.number().required().messages({
+    stock_quantity: Joi.number().min(1).required().messages({
         "number.empty": "Số lượng tồn kho bắt buộc nhập",
         "any.required": "Trường Số lượng tồn kho bắt buộc nhập",
-        "number.base": "Số lượng tồn kho sản phẩm phải là số"
+        "number.base": "Số lượng sản phẩm muốn tạo phải là số",
+        'number.min': 'Số lượng ít nhất phải là 1.'
     }),
     categoryId: Joi.string().required().messages({
         "string.empty": "Danh mục sản phẩm bắt buộc nhập",

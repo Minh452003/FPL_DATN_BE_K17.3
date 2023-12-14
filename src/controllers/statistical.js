@@ -1,13 +1,14 @@
 import Order from '../models/orders.js';
 import Product from "../models/products.js";
 import Auth from "../models/auth.js";
-import Category from "../models/category.js";
+import mongoose from 'mongoose';
 import Comment from "../models/comments.js";    
 import Status from "../models/status.js";
+
 export const getRevenueAndProfit = async (req, res) => {
     try {
         const { year, month } = req.query;
-        let matchCondition = {}; // Điều kiện tìm kiếm dựa trên năm và/hoặc tháng
+        let matchCondition = {};
 
         if (year) {
             matchCondition.year = parseInt(year);
@@ -23,13 +24,31 @@ export const getRevenueAndProfit = async (req, res) => {
             return res.status(400).json({ error: 'Thiếu thông tin tháng hoặc năm trong yêu cầu.' });
         }
 
-        // Sử dụng aggregation framework của MongoDB để thống kê doanh thu và lợi nhuận
         const revenueAndProfit = await Order.aggregate([
+            {
+                $match: {
+                    $or: [
+                        { status: new mongoose.Types.ObjectId('64e8a93da63d2db5e8d8562a') },
+                        { status: new mongoose.Types.ObjectId('64e8a93da63d2db5e8d8562b') },
+                        { status: new mongoose.Types.ObjectId('64e8a93da63d2db5e8d8562d') },
+                        { status: new mongoose.Types.ObjectId('656596893a59bec4e5baea02') },
+                        { status: new mongoose.Types.ObjectId('6565969f3a59bec4e5baea03') },
+                    ],
+                },
+            },
             {
                 $project: {
                     year: { $year: '$createdAt' },
                     month: { $month: '$createdAt' },
-                    total: 1, // Tổng tiền của đơn hàng
+                    total: 1,
+                    status: 1,
+                    deposit: {
+                        $cond: {
+                            if: { $eq: ['$status', new mongoose.Types.ObjectId('6565969f3a59bec4e5baea03')] },
+                            then: '$deposit',
+                            else: { $add: ['$total', '$deposit'] }, // Nếu không phải đơn đã huỷ, sử dụng giá trị 0
+                        },
+                    },
                 },
             },
             {
@@ -39,10 +58,9 @@ export const getRevenueAndProfit = async (req, res) => {
                 $group: {
                     _id: {
                         year: '$year',
-                        month: '$month'
+                        month: '$month',
                     },
-                    total: { $sum: '$total' },
-                    profit: { $sum: { $multiply: ['$total', 0.25] } }, // Tính lợi nhuận (25%)
+                    total: { $sum: '$deposit' }, // Tổng tiền đơn hàng
                 },
             },
             {
@@ -51,12 +69,11 @@ export const getRevenueAndProfit = async (req, res) => {
                     year: '$_id.year',
                     month: '$_id.month',
                     total: 1,
-                    profit: 1,
                 },
             },
             {
                 $sort: {
-                    month: 1
+                    month: 1,
                 },
             },
         ]);
@@ -66,7 +83,7 @@ export const getRevenueAndProfit = async (req, res) => {
         console.error(error);
         res.status(500).json({ error: 'Lỗi trong quá trình xử lý.' });
     }
-}
+};
 
 export const getTopSellingProducts = async (req, res) => {
     try {
@@ -729,7 +746,8 @@ export const getOrderCanceled = async (req, res) => {
         });
 
         if (month) {
-            aggregationStages[0].$match.createdAt = {$gte: new Date(parseInt(year), parseInt(month) - 1, 1),
+            aggregationStages[0].$match.createdAt = {
+                $gte: new Date(parseInt(year), parseInt(month) - 1, 1),
                 $lt: new Date(parseInt(year), parseInt(month), 1),
             };
         }

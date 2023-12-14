@@ -47,7 +47,7 @@ export const getOrderById = async (req, res) => {
 
 export const getAllOrder = async (req, res) => {
     try {
-        const order = await Order.find().populate('products.productId status userId');
+        const order = await Order.find().populate('products.productId status userId').sort({ createdAt: -1 });
         if (!order) {
             return res.status(404).json({
                 error: "Lấy tất cả đơn hàng thất bại"
@@ -371,15 +371,30 @@ export const updateOrderStatus = async (req, res) => {
     try {
         const id = req.params.id;
         const body = req.body;
-        const order = await Order.findByIdAndUpdate(id, body, { new: true })
+        const { status } = body;
+        const order = await Order.findById(id);
+
         if (!order) {
             return res.status(404).json({
                 message: "Đơn hàng không tồn tại"
             })
         }
+        if (order.status == status) {
+            return res.status(404).json({
+                message: "Trạng thái đơn hàng đã là trạng thái bạn muốn cập nhật"
+            });
+        }
+        if (order.status == '656596893a59bec4e5baea02') {
+            return res.status(404).json({
+                message: "Đơn hàng đã hoàn thành, không thể cập nhật trạng thái"
+            })
+        }
+        const orderUpdate = await Order.findByIdAndUpdate(id, body, { new: true })
+
         return res.status(200).json({
             message: "Huỷ đơn hàng thành công",
-            orderUpdateSuccess: order
+            messages: 'Cập nhật trạng thái đơn hàng thành công',
+            orderUpdateSuccess: orderUpdate
         })
     } catch (error) {
         return res.status(400).json({
