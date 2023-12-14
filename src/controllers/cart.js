@@ -58,10 +58,7 @@ const addProduct = async (cartExist, productAdd, res) => {
                 if (!product || product.stock_quantity < item.stock_quantity) {
                     return res.status(400).json({ message: `Đã quá số hàng tồn` });
                 }
-            } else {
-                if (!customProduct || customProduct.stock_quantity < item.stock_quantity) {
-                    return res.status(400).json({ message: `Đã đạt số lượng mua tối đa` });
-                }
+            
             }
         }
 
@@ -117,10 +114,7 @@ export const create = async (req, res) => {
             if (!product || product.stock_quantity < productNeedToAdd.stock_quantity) {
                 return res.status(400).json({ message: `Đã quá số hàng tồn` });
             }
-        } else {
-            if (!customProduct || customProduct.stock_quantity < productNeedToAdd.stock_quantity) {
-                return res.status(400).json({ message: `Đã đạt số lượng mua tối đa` });
-            }
+        
         }
         const { error } = cartSchema.validate(req.body, { abortEarly: false });
         if (error) {

@@ -5,8 +5,8 @@ import { ContactSchema } from "../schemas/contact.js";
 export const getAllContact = async (req, res) => {
     const {
         _limit = 10,
-        _sort = "createAt",
-        _order = "asc",
+        _sort = "createdAt",
+        _order = "desc",
         _page = 1,
         q,
     } = req.query;
@@ -14,7 +14,7 @@ export const getAllContact = async (req, res) => {
         page: _page,
         limit: _limit,
         sort: {
-            [_sort]: _order == "desc" ? -1 : 1,
+            [(_sort === "createdAt" ? "createdAt" : _sort)]: _order === "desc" ? -1 : 1,
         },
     };
 

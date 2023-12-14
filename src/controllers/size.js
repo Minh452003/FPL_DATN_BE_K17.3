@@ -3,7 +3,7 @@ import { SizeSchema } from "../schemas/size.js";
 
 export const getSize = async (req, res) => {
   try {
-    const size = await Size.find();
+    const size = await Size.find().sort({ createdAt: -1 });
     return res.status(200).json({
       message: " Lấy tất cả size thành công",
       size

@@ -3,15 +3,15 @@
     import { ProductSchema } from "../schemas/products.js";
 
     export const getAll = async (req, res) => {
-        const { _limit = 100, _sort = "createAt", _order = "asc", _page = 1, q } = req.query;
+        const { _limit = 100, _sort = "createdAt", _order = "desc", _page = 1, q } = req.query;
         const options = {
             page: _page,
             limit: _limit,
             sort: {
-                [_sort]: _order == "desc" ? -1 : 1,
+                [(_sort === "createdAt" ? "createdAt" : _sort)]: _order === "desc" ? -1 : 1,
             },
         };
-
+    
         const searchQuery = q ? { product_name: { $regex: q, $options: "i" } } : {};
         try {
             const product = await Product.paginate(searchQuery, options);

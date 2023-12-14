@@ -4,8 +4,8 @@ import Category from "../models/category.js";
 export const getAllCategory = async (req, res) => {
   const {
     _limit = 100,
-    _sort = "createAt",
-    _order = "asc",
+    _sort = "createdAt",
+    _order = "desc",
     _page = 1,
     q,
   } = req.query;
@@ -13,7 +13,7 @@ export const getAllCategory = async (req, res) => {
     page: _page,
     limit: _limit,
     sort: {
-      [_sort]: _order == "desc" ? -1 : 1,
+      [(_sort === "createdAt" ? "createdAt" : _sort)]: _order === "desc" ? -1 : 1,
     },
   };
 

@@ -29,7 +29,7 @@ export const createCustomizedProduct = async (req, res) => {
 };
 export const getAllCustomProduct = async (req, res) => {
     try {
-        const customProduct = await CustomizedProduct.find();
+        const customProduct = await CustomizedProduct.find().sort({ createdAt: -1 });
         if (customProduct.length === 0) {
             return res.status(404).json({
                 message: 'Lấy tất cả sản phẩmm tự thiết kế thất bại',
@@ -50,7 +50,7 @@ export const listCustomizedProducts = async (req, res) => {
     try {
         const userId = req.params.userId; // Lấy userId từ yêu cầu URL
         // Truy vấn cơ sở dữ liệu để tìm tất cả sản phẩm tự thiết kế của người dùng
-        const customizedProducts = await CustomizedProduct.find({ userId });
+        const customizedProducts = await CustomizedProduct.find({ userId }).sort({ createdAt: -1 });
         if (!customizedProducts || customizedProducts.length === 0) {
             return res.status(404).json({
                 message: 'Không tìm thấy sản phẩm tự thiết kế của người dùng này',

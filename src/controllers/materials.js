@@ -3,7 +3,7 @@ import { materialSchema } from "../schemas/materials.js";
 
 export const getMaterialList = async (req, res) => {
     try {
-        const material = await Material.find();
+        const material = await Material.find().sort({ createdAt: -1 });
         if (material.length === 0) {
             return res.status(404).json({
                 message: 'Lấy tất cả vật liệu thất bại',

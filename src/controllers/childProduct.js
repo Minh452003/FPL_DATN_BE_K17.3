@@ -34,6 +34,16 @@ export const createChildProduct = async (req, res) => {
                 message: errors
             })
         }
+        const checkChild = await ChildProduct.findOne({
+            productId: body.productId,
+            colorId: body.colorId,
+            sizeId: body.sizeId
+        });
+        if (checkChild) {
+            return res.status(400).json({
+                message: "Đã có sản phẩm tồn tại màu và kích thước này"
+            })
+        }
         const product = await ChildProduct.create(body);
         if (product.length === 0) {
             return res.status(400).json({
@@ -93,6 +103,18 @@ export const updateChildProduct = async (req, res) => {
                 message: errors
             })
         }
+        const checkChild = await ChildProduct.findOne({
+            productId: body.productId,
+            colorId: body.colorId,
+            sizeId: body.sizeId,
+            _id: { $ne: id } // Loại trừ sản phẩm hiện tại đang được cập nhật
+        });
+        console.log(checkChild);
+        if (checkChild) {
+            return res.status(404).json({
+                message: "Sản phẩm con đã tồn tại",
+            });
+        }
         const data = await ChildProduct.findByIdAndUpdate({ _id: id }, body, { new: true })
         if (data.length === 0) {
             return res.status(400).json({
@@ -109,6 +131,7 @@ export const updateChildProduct = async (req, res) => {
         })
     }
 }
+
 export const getChildProductPrice = async (req, res) => {
     try {
         const { productId, sizeId, colorId } = req.query;
