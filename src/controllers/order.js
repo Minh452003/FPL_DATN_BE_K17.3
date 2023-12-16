@@ -9,6 +9,7 @@ import paypal from 'paypal-rest-sdk'
 import axios from "axios";
 import { sendOrderEmail } from "./auth.js";
 import notifier from "node-notifier";
+import Auth from "../models/auth.js";
 
 export const getOrderByUserId = async (req, res) => {
     try {
@@ -377,6 +378,12 @@ export const updateOrderStatus = async (req, res) => {
         if (!order) {
             return res.status(404).json({
                 message: "Đơn hàng không tồn tại"
+            })
+        }
+        const user = await Auth.findById(order.userId);
+        if (user._id != body.userId && order.deposit > 0 && user.role == 'admin' && status == '6565969f3a59bec4e5baea03') {
+            return res.status(404).json({
+                message: "Đơn hàng đã cọc, không thể huỷ!"
             })
         }
         if (order.status == status) {

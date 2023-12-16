@@ -115,7 +115,6 @@ export const updateUser = async (req, res) => {
         const user = await Auth.findByIdAndUpdate(id, body, { new: true }).select(
             "-password -role -refreshToken -passwordChangeAt -__v"
         );
-        console.log(user);
         if (!user) {
             return res.status(400).json({
                 message: "Cập nhật thông tin người dùng thất bại",

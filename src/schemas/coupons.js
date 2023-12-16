@@ -6,10 +6,7 @@ export const CouponSchema = Joi.object({
         "string.empty": "Tên mã giảm giá bắt buộc nhập",
         "any.required": "Trường tên mã giảm giá bắt buộc nhập"
     }),
-    coupon_code: Joi.string().required().messages({
-        "string.empty": "Code giảm giá bắt buộc nhập",
-        "any.required": "Trường code giảm giá bắt buộc nhập"
-    }),
+    coupon_code: Joi.string(),
     coupon_content: Joi.string().required().messages({
         "string.empty": "Nội dung mã giảm giá bắt buộc nhập",
         "any.required": "Trường nội dung mã giảm giá bắt buộc nhập"
@@ -24,7 +21,7 @@ export const CouponSchema = Joi.object({
         "number.empty": "Số tiền giảm giá bắt buộc nhập",
         "any.required": "Trường số tiền giảm giá bắt buộc nhập",
         "number.base": "Số tiền giảm giá phải là số",
-        "number.min": "Không được nhập số nhỏ hơn 1",
+        "number.min": "Không được nhập nhỏ hơn 1%",
         "number.max": "Không được nhập trên 100%"
     }),
     expiration_date: Joi.date().min('now').required().messages({
