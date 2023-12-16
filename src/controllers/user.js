@@ -99,8 +99,6 @@ export const changePassword = async (req, res) => {
 
         const user = req.user
         const isMatch = await bcrypt.compare(req.body.currentPassword, user.password)
-        // console.log(req.body.currentPassword);
-        // console.log(user.password);
         if (!isMatch) {
             return res.status(400).json({
                 message: "Mật khẩu hiện tại không đúng"
