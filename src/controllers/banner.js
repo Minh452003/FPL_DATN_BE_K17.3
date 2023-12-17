@@ -1,13 +1,13 @@
 import Banner from '../models/banner.js'
 import { bannerSchema } from '../schemas/banner.js';
-export const createBanner= async (req, res) => {
+export const createBanner = async (req, res) => {
   try {
     const { image } = req.body;
     const formData = req.body;
     const data = await Banner.findOne({ image });
     if (data) {
       return res.status(400).json({
-        message: "Banner đã tồn tại",
+        message: "Ảnh quảng cáo đã tồn tại",
       });
     }
     const { error } = bannerSchema.validate(formData, { abortEarly: false });
@@ -20,11 +20,11 @@ export const createBanner= async (req, res) => {
     const banner = await Banner.create(formData);
     if (!banner || banner.length === 0) {
       return res.status(404).json({
-        message: "Không tìm thấy banner",
+        message: "Không tìm thấy ảnh quảng cáo",
       });
     }
     return res.status(200).json({
-      message: "Thêm banner thành công",
+      message: "Thêm ảnh quảng cáo thành công",
       banner,
     });
   } catch (error) {
@@ -32,9 +32,9 @@ export const createBanner= async (req, res) => {
       message: error,
     });
   }
-  };
+};
 
-export const getAllBanners= async (req, res) => {
+export const getAllBanners = async (req, res) => {
   const {
     _limit = 10,
     _sort = "createAt",
@@ -54,11 +54,11 @@ export const getAllBanners= async (req, res) => {
     const banner = await Banner.paginate(searchQuery, options);
     if (banner.length === 0) {
       return res.status(404).json({
-        message: "Không có banner!",
+        message: "Không có ảnh quảng cáo!",
       });
     }
     return res.status(200).json({
-      message: "Lấy tất cả banner thành công!",
+      message: "Lấy tất cả ảnh quảng cáo thành công!",
       banner,
     });
   } catch (error) {
@@ -66,48 +66,47 @@ export const getAllBanners= async (req, res) => {
       message: error,
     });
   }
-  };
-  export const getBannerById = async (req, res) => {
-    try {
-      const banner = await Banner.findById(req.params.id);
-      if (!banner || banner.length === 0) {
-        return res.status(404).json({
-          message: "Không tìm thấy banner",
-        });
-      }
-      return res.status(200).json({
-        message: "Lấy 1 banner thành công",
-        banner,
-      });
-    } catch (error) {
-      return res.status(400).json({
-        message: error.message,
+};
+export const getBannerById = async (req, res) => {
+  try {
+    const banner = await Banner.findById(req.params.id);
+    if (!banner || banner.length === 0) {
+      return res.status(404).json({
+        message: "Không tìm thấy ảnh quảng cáo",
       });
     }
-  };
-  export const updateBanner = async (req, res) => {
-    try {
-      const id = req.params.id;
-      const body = req.body;
-      const { error } = bannerSchema.validate(body, { abortEarly: false });
-      if (error) {
-        const errors = error.details.map((err) => err.message);
-        return res.status(400).json({
-          message: errors,
-        });
-      }
-      const banner = await Banner.findOneAndUpdate({ _id: id }, body, {
-        new: true,
+    return res.status(200).json({
+      message: "Lấy 1 ảnh quảng cáo thành công",
+      banner,
+    });
+  } catch (error) {
+    return res.status(400).json({
+      message: error.message,
+    });
+  }
+};
+export const updateBanner = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const body = req.body;
+    const { error } = bannerSchema.validate(body, { abortEarly: false });
+    if (error) {
+      const errors = error.details.map((err) => err.message);
+      return res.status(400).json({
+        message: errors,
       });
-      if (!banner || banner.length === 0) {
-        return res.status(400).json({
-          message: "Cập nhật banner thất bại",
-        });
-      }
-      return res.status(200).json({
-        message: "Cập nhật banner thành công",
-        banner,
+    }
+    const banner = await Banner.findOneAndUpdate({ _id: id }, body, {
+      new: true,
+    });
+    if (!banner || banner.length === 0) {
+      return res.status(400).json({
+        message: "Cập nhật ảnh quảng cáo thất bại",
       });
+    }
+    return res.status(200).json({
+      message: "Cập nhật ảnh quảng cáo thành công",
+      banner,});
     } catch (error) {
       return res.status(400).json({
         message: error.message,
@@ -118,9 +117,9 @@ export const getAllBanners= async (req, res) => {
     try {
       const deletedBanner = await Banner.findByIdAndDelete(req.params.id);
       if (deletedBanner) {
-        res.status(200).json({ message: 'Banner deleted successfully' });
+        res.status(200).json({ message: 'Ảnh quảng cáo đã được xoá' });
       } else {
-        res.status(404).json({ message: 'Banner not found' });
+        res.status(404).json({ message: 'Ảnh quảng cáo không tồn tại' });
       }
     } catch (error) {
       res.status(500).json({ error: error.message });
