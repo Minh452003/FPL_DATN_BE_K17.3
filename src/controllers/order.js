@@ -280,6 +280,7 @@ export const createOrder = async (req, res) => {
             }
 
         } else {
+            body.total = body.total + body.shipping;
             // Kiểm tra xem có phiếu giảm giá được sử dụng trong đơn hàng không
             if (body.couponId !== null) {
                 // Tăng số lượng phiếu giảm giá đã sử dụng lên 1

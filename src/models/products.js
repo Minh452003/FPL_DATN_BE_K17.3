@@ -24,7 +24,6 @@ const productsSchema = mongoose.Schema({
     },
     description: {
         type: String,
-        required: true
     },
     categoryId: {
         type: mongoose.Types.ObjectId,
