@@ -22,7 +22,11 @@ const cartSchema = mongoose.Schema(
         originalPrice: Number,
         sizeId: String,
         colorId: String,
-        materialId: String
+        materialId: String,
+        formation: {
+          type: String,
+          default: "nor",
+        },
       },
     ],
     total: {

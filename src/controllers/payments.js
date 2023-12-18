@@ -216,7 +216,7 @@ export const PayPal = async (req, res) => {
     const exchangeRate = 1 / rate.data.rates.VND;
     const shippingFee = Number((shipping * exchangeRate).toFixed(2));
     const transformedProducts = products.map(product => {
-        const classOption = `Price=${product.product_price}&&Color=${product.colorId}&&Size=${product.sizeId}&&Material=${product.materialId}`;
+        const classOption = `Price=${product.product_price}&&Color=${product.colorId}&&Size=${product.sizeId}&&Material=${product.materialId}&&Formation=${product.formation}`;
         const priceUsd = (product.product_price * exchangeRate).toFixed(2);
         return {
             sku: product.productId,
@@ -302,6 +302,7 @@ export const PayPalSuccess = (req, res) => {
                 let size = '';
                 let material = '';
                 let price = '';
+                let formation = '';
                 // Lặp qua từng phần tử trong productInfo
                 classOption.forEach(info => {
                     if (info.includes('Color=')) {
@@ -314,7 +315,10 @@ export const PayPalSuccess = (req, res) => {
                         material = info.replace('Material=', ''); // Lấy kích thước sau "Material="
                     }
                     if (info.includes('Price=')) {
-                        price = info.replace('Price=', ''); // Lấy kích thước sau "Material="
+                        price = info.replace('Price=', '');
+                    }
+                    if (info.includes('Formation=')) {
+                        formation = info.replace('Formation=', '');
                     }
                 });
                 return {
@@ -325,7 +329,8 @@ export const PayPalSuccess = (req, res) => {
                     image: item.image_url,
                     colorId: color, // Lưu thông tin color
                     sizeId: size, // Lưu thông tin size
-                    materialId: material
+                    materialId: material,
+                    formation: formation
                 };
             });
             // Bây giờ bạn có thể sử dụng danh sách sản phẩm productList trong mã của bạn
@@ -394,7 +399,7 @@ export const PayPalSuccess = (req, res) => {
             await cartExist.save();
             const order = await Order.create(formattedData);
             const orderIdString = order._id.toString();
-            await sendOrderEmail({ userId: userId, orderId: orderIdString });               
+            await sendOrderEmail({ userId: userId, orderId: orderIdString });
             res.redirect(process.env.REDIRECT_SUCCESS);
         }
     });
@@ -517,6 +522,8 @@ export const depositPaypal = async (req, res) => {
                 let size = '';
                 let material = '';
                 let price = '';
+                let formation = '';
+
                 // Lặp qua từng phần tử trong productInfo
                 classOption.forEach(info => {
                     if (info.includes('Color=')) {
@@ -531,6 +538,9 @@ export const depositPaypal = async (req, res) => {
                     if (info.includes('Price=')) {
                         price = info.replace('Price=', ''); // Lấy kích thước sau "Material="
                     }
+                    if (info.includes('Formation=')) {
+                        formation = info.replace('Formation=', '');
+                    }
                 });
                 return {
                     product_name: item.name,
@@ -540,7 +550,8 @@ export const depositPaypal = async (req, res) => {
                     image: item.image_url,
                     colorId: color, // Lưu thông tin color
                     sizeId: size, // Lưu thông tin size
-                    materialId: material
+                    materialId: material,
+                    formation: formation
                 };
             });
             // Bây giờ bạn có thể sử dụng danh sách sản phẩm productList trong mã của bạn

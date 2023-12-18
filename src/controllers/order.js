@@ -212,7 +212,7 @@ export const createOrder = async (req, res) => {
                 const exchangeRate = 1 / rate.data.rates.VND;
                 const shippingFee = Number(((shipping * 0.2) * exchangeRate).toFixed(2));
                 const transformedProducts = products.map(product => {
-                    const classOption = `Price=${product.product_price}&&Color=${product.colorId}&&Size=${product.sizeId}&&Material=${product.materialId}`;
+                    const classOption = `Price=${product.product_price}&&Color=${product.colorId}&&Size=${product.sizeId}&&Material=${product.materialId}&&Formation=${product.formation}`;
                     const priceUsd = ((product.product_price * 0.2) * exchangeRate).toFixed(2);
                     return {
                         sku: product.productId,

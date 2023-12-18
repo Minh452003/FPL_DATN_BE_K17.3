@@ -3,6 +3,7 @@ import { CommentSchema } from "../schemas/comments.js";
 import Product from "../models/products.js";
 import Auth from "../models/auth.js";
 import Order from "../models/orders.js"
+import customizedProducts from "../models/customizedProducts.js";
 
 export const getCommentFromProduct = async (req, res) => {
     try {
@@ -93,27 +94,33 @@ export const getAllComment = async (req, res) => {
 
 export const create = async (req, res) => {
     try {
-        const { userId, rating, description, productId, orderId, image } = req.body;
+        const { userId, rating, description, productId, orderId, sizeId, colorId, materialId } = req.body;
         const { error } = CommentSchema.validate(req.body, { abortEarly: false });
+
+        // Kiểm tra và xử lý lỗi nếu có
         if (error) {
             const errors = error.details.map((err) => err.message);
             return res.status(400).json({
                 message: errors
             });
         }
+
         if (!userId) {
             return res.status(401).json({
-                message: "Bạn phải đang nhập mới được đánh giá sản phẩm!",
+                message: "Bạn phải đăng nhập mới được đánh giá sản phẩm!",
             });
         }
-        // Check if the product exists
+
+        // Kiểm tra sự tồn tại của sản phẩm và người dùng
         const product = await Product.findById(productId);
-        if (!product) {
+        const productCustom = await customizedProducts.findById(productId);
+
+        if (!product && !productCustom) {
             return res.status(404).json({
-                message: "Sản phẩm không tồn tại.",
+                message: "Không tìm thấy sản phẩm.",
             });
         }
-        // Check if the user exists
+
         const user = await Auth.findById(userId);
         if (!user) {
             return res.status(404).json({
@@ -121,21 +128,39 @@ export const create = async (req, res) => {
             });
         }
 
-        // Tìm tất cả các đơn hàng của người dùng
-        const orders = await Order.findOne({ _id: orderId });
+        // Tìm đơn hàng với orderId
+        const order = await Order.findById(orderId);
+        if (!order) {
+            return res.status(404).json({
+                message: "Đơn hàng không tồn tại.",
+            });
+        }
 
-        if (orders.hasReviewed === false) {
+        // Tìm sản phẩm trong đơn hàng để đánh giá
+        const productToReview = order.products.find((product) => {
+            return (
+                !product.hasReviewed &&
+                product.productId == productId &&
+                product.sizeId == sizeId && // Thay 'sizeId' bằng tên thuộc tính kích thước trong request
+                product.colorId == colorId && // Thay 'colorId' bằng tên thuộc tính màu sắc trong request
+                product.materialId == materialId // Thay 'materialId' bằng tên thuộc tính vật liệu trong request
+            );
+        });
+        if (productToReview) {
             // Nếu sản phẩm có thể đánh giá, đánh giá sản phẩm và cập nhật trạng thái đã đánh giá
             const comment = await Comment.create({
                 userId,
                 rating,
                 description,
                 productId,
-                image
             });
-            // Cập nhật trường hasReviewed của sản phẩm trong mảng products của đơn hàng
-            orders.hasReviewed = true;
-            await orders.save();
+
+            // Cập nhật trạng thái đã đánh giá của sản phẩm
+            productToReview.hasReviewed = true;
+
+            // Lưu đơn hàng sau khi đã cập nhật
+            await order.save();
+
             return res.status(200).json({
                 message: "Bạn đã đánh giá thành công sản phẩm này!",
                 success: true,
@@ -147,13 +172,12 @@ export const create = async (req, res) => {
             });
         }
     } catch (error) {
-        console.log(error.message);
-        // Xử lý lỗi và trả về lỗi nếu cần thiết
         return res.status(400).json({
             message: error.message,
         });
     }
 };
+
 
 
 

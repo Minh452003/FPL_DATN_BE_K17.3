@@ -21,6 +21,11 @@ const orderSchema = mongoose.Schema({
       sizeId: String,
       colorId: String,
       materialId: String,
+      hasReviewed: {
+        type: Boolean,
+        default: false, // Ban đầu, đánh dấu là chưa đánh giá
+      },
+      formation: String,
     }
   ],
   total: {

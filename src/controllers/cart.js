@@ -42,7 +42,8 @@ const addProduct = async (cartExist, productAdd, res) => {
                 stock_quantity: productAdd.stock_quantity,
                 sizeId: productAdd.sizeId,
                 colorId: productAdd.colorId,
-                materialId: productAdd.materialId
+                materialId: productAdd.materialId,
+                formation: productAdd.formation
             }
             cartExist.products.push(newProduct);
             cartExist.total += productAdd.stock_quantity * newProduct.product_price;
@@ -58,7 +59,7 @@ const addProduct = async (cartExist, productAdd, res) => {
                 if (!product || product.stock_quantity < item.stock_quantity) {
                     return res.status(400).json({ message: `Đã quá số hàng tồn` });
                 }
-            
+
             }
         }
 
@@ -114,7 +115,7 @@ export const create = async (req, res) => {
             if (!product || product.stock_quantity < productNeedToAdd.stock_quantity) {
                 return res.status(400).json({ message: `Đã quá số hàng tồn` });
             }
-        
+
         }
         const { error } = cartSchema.validate(req.body, { abortEarly: false });
         if (error) {
@@ -211,6 +212,7 @@ export const changeQuantity = async (req, res) => {
                 sizeId: product.sizeId,
                 colorId: product.colorId,
                 materialId: product.materialId,
+                formation: product.formation,
                 _id: product._id // Lưu ý: _id là trường ID được Mongoose tạo
             }));
             // Tính lại tổng giá
