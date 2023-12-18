@@ -30,8 +30,8 @@ export const ProductSchema = Joi.object({
         "string.base": "Thương hiệu phải là chuỗi"
     }),
     materialId: Joi.string().required().messages({
-        "string.empty": "Chất liệu bắt buộc nhập",
-        "any.required": "Trường chất liệu bắt buộc nhập",
-        "string.base": "Chất liệu phải là chuỗi"
+        "string.empty": "Vật liệu bắt buộc nhập",
+        "any.required": "Trường vật liệu bắt buộc nhập",
+        "string.base": "Vật liệu phải là chuỗi"
     })
 })

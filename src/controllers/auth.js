@@ -661,7 +661,7 @@ export const sendOrderEmail = async ({ userId, orderId }) => {
             <th style="border: 1px solid #dddddd; text-align: left; padding: 8px;">Số lượng</th>
             <th style="border: 1px solid #dddddd; text-align: left; padding: 8px;">Màu</th>
             <th style="border: 1px solid #dddddd; text-align: left; padding: 8px;">Kích thước</th>
-            <th style="border: 1px solid #dddddd; text-align: left; padding: 8px;">Chất liệu</th>
+            <th style="border: 1px solid #dddddd; text-align: left; padding: 8px;">Vật liệu</th>
         </tr>
     </thead>
     <tbody>
