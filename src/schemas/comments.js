@@ -20,6 +20,9 @@ export const CommentSchema = Joi.object({
         'any.required': 'rating không được để trống.',
     }),
     formattedCreatedAt: Joi.string().optional(),
-    orderId: Joi.string()
+    orderId: Joi.string(),
+    sizeId: Joi.string(),
+    colorId: Joi.string(),
+    materialId: Joi.string(),
 
 }).options({ abortEarly: false });

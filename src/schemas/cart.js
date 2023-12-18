@@ -32,4 +32,5 @@ export const cartSchema = Joi.object({
     'any.required': 'Material không được để trống.',
     'string.base': 'Material phải là một chuỗi.',
   }),
+  formation: Joi.string()
 });
