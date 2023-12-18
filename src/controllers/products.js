@@ -89,7 +89,7 @@
                 await product.delete()
             }
             return res.status(200).json({
-                message: "Xoá sản phẩm thành công.chuyển sang thùng rác",
+                message: "Xoá sản phẩm thành công. Chuyển sang thùng rác",
                 product
             })
         } catch (error) {

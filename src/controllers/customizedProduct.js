@@ -109,7 +109,7 @@ export const restoreProduct = async (req, res) => {
         }
 
         return res.status(200).json({
-            message: "Khôi phục sản phẩm thành công.",
+            message: "Khôi phục sản phẩm tự thiết kế thành công.",
             product: restoredProduct,
         });
     } catch (error) {

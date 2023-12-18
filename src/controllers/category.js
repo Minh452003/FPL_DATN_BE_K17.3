@@ -88,7 +88,7 @@ export const removeForce = async (req, res) => {
   try {
     const category = await Category.deleteOne({ _id: req.params.id });
     return res.status(200).json({
-      message: "Xoá sản phẩm vĩnh viễn",
+      message: "Xoá danh mục vĩnh viễn",
       category
     })
   } catch (error) {
@@ -137,12 +137,12 @@ export const restoreCategory = async (req, res) => {
     const restoredCategory = await Category.restore({ _id: req.params.id }, { new: true });
     if (!restoredCategory) {
       return res.status(400).json({
-        message: "Sản phẩm không tồn tại hoặc đã được khôi phục trước đó.",
+        message: "Danh mục không tồn tại hoặc đã được khôi phục trước đó.",
       });
     }
 
     return res.status(200).json({
-      message: "Khôi phục sản phẩm thành công.",
+      message: "Khôi phục danh mục thành công.",
       category: restoredCategory,
     });
   } catch (error) {
