@@ -479,7 +479,12 @@ export const getReviewStatistics = async (req, res) => {
             },
         ]);
         if (result.length === 0) {
-            return res.status(400).json({ error: 'Không có đánh giá.' });
+            return res.status(200).json({
+                tongdanhgia: 0,
+                trungbinh: 0,
+                tichcuc: 0,
+                tieucuc: 0,
+            });
         }
         const totalReviewCount = result[0].totalReviewCount;
         const averageRating = (result[0].averageRating).toFixed(2);
