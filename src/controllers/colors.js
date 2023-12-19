@@ -3,7 +3,7 @@ import { colorSchema } from "../schemas/colors.js";
 
 export const getColorList = async (req, res) => {
     try {
-        const color = await Color.find().sort({ createdAt: -1 });
+        const color = await Color.find();
         if (color.length === 0) {
             return res.status(404).json({
                 message: 'Lấy tất cả màu thất bại',
