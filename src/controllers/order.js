@@ -387,6 +387,11 @@ export const updateOrderStatus = async (req, res) => {
                 message: "Đơn hàng đã cọc, không thể huỷ!"
             })
         }
+        if (order.deposit === 0 && order.payerId && (status == '64e8a93da63d2db5e8d8562a')) {
+            return res.status(404).json({
+                message: "Đơn hàng đã thanh toán toàn bộ tiền, không thể chuyển sang chưa xác nhận!"
+            });
+        }
         if (order.status == status) {
             return res.status(404).json({
                 message: "Trạng thái đơn hàng đã là trạng thái bạn muốn cập nhật"
