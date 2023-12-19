@@ -12,10 +12,6 @@ const categorySchema = mongoose.Schema({
     type: Object,
     required: true
   },
-  price_increase_percent: {
-    type: Number, // % giá sản phẩm sẽ tăng nếu người dùng tự thiết kế sản phẩm (0-100%)
-    required: true
-  },
   products: [
     {
       type: mongoose.Types.ObjectId,
