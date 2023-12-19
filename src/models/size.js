@@ -21,7 +21,15 @@ const sizeSchema = new mongoose.Schema(
     size_width: {
       type: Number, //Chiều rộng (cm)
       required: true
-    }
+    },
+    size_price: {
+      type: Number,
+      required: true
+    },
+    size_info: {
+      type: String,
+      default: 'norma'
+    },
   },
   { timestamps: true, versionKey: false }
 );

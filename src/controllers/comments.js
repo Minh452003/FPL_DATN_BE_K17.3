@@ -94,7 +94,7 @@ export const getAllComment = async (req, res) => {
 
 export const create = async (req, res) => {
     try {
-        const { userId, rating, description, productId, orderId, sizeId, colorId, materialId } = req.body;
+        const { userId, rating, description, image, productId, orderId, sizeId, colorId, materialId } = req.body;
         const { error } = CommentSchema.validate(req.body, { abortEarly: false });
 
         // Kiểm tra và xử lý lỗi nếu có
@@ -153,6 +153,7 @@ export const create = async (req, res) => {
                 rating,
                 description,
                 productId,
+                image
             });
 
             // Cập nhật trạng thái đã đánh giá của sản phẩm

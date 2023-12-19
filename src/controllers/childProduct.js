@@ -109,7 +109,6 @@ export const updateChildProduct = async (req, res) => {
             sizeId: body.sizeId,
             _id: { $ne: id } // Loại trừ sản phẩm hiện tại đang được cập nhật
         });
-        console.log(checkChild);
         if (checkChild) {
             return res.status(404).json({
                 message: "Sản phẩm con đã tồn tại",

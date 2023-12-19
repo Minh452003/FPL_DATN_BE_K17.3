@@ -28,6 +28,7 @@ import routerNews from "./routers/news.js";
 import routerBanner from "./routers/banner.js";
 import routerContact from "./routers/contact.js";
 import routerFavoriteProducts from "./routers/favoriteProduct.js";
+import routerHistory from "./routers/orderHistory.js";
 
 
 dotenv.config();
@@ -70,6 +71,7 @@ app.use("/api", routerNews);
 app.use("/api", routerBanner);
 app.use("/api", routerContact);
 app.use("/api", routerFavoriteProducts);
+app.use("/api", routerHistory);
 
 app.listen(8088, async () => {
     await mongoose.connect(process.env.URL_MONGO, { useNewUrlParser: true, useUnifiedTopology: true });
